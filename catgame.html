@@ -22,7 +22,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
             font-family: 'JoyStix', sans-serif;
             touch-action: none;
         }
@@ -40,22 +41,25 @@
             position: relative;
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, #d4fc79, #96e6a1);
             border-radius: 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             overflow: hidden;
             border: 6px solid rgba(255,255,255,0.9);
         }
         #cat {
             position: absolute;
-            transition: transform 0.5s ease-out;
+            transition: top 0.1s ease-out;
             z-index: 10;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             background-size: cover;
+        }
+        @keyframes jumpAnimation {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
         .platform {
             position: absolute;
-            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            background: url('platform.png') no-repeat center center;
+            background-size: cover;
             border-radius: 8px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             z-index: 5;
@@ -75,13 +79,13 @@
             transform: scale(1.2);
         }
         .heart-bonus {
-            background: radial-gradient(#ff69b4, #ff1493);
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            background: url('life.png') no-repeat center center;
+            background-size: cover;
             animation: float 1.5s infinite;
         }
         .food-bonus {
-            background: #8b4513;
-            border-radius: 5px;
+            background: url('food.png') no-repeat center center;
+            background-size: cover;
             animation: float 1.5s infinite;
         }
         @keyframes float {
@@ -91,7 +95,8 @@
         }
         #dog {
             position: absolute;
-            background: linear-gradient(45deg, #8b4513, #a0522d);
+            background: url('dog.png') no-repeat center center;
+            background-size: cover;
             border-radius: 4px;
             z-index: 10;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
@@ -105,7 +110,8 @@
         }
         #nut {
             position: absolute;
-            background: radial-gradient(circle, #8b4513, #5c4033);
+            background: url('nut.png') no-repeat center center;
+            background-size: cover;
             border-radius: 50%;
             z-index: 10;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
@@ -163,8 +169,8 @@
             z-index: 20;
         }
         .heart {
-            background: radial-gradient(circle, #ff69b4, #ff1493);
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            background: url('life.png') no-repeat center center;
+            background-size: cover;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             animation: heartbeat 1s infinite;
         }
@@ -199,22 +205,6 @@
         #menu button {
             margin: 10px;
             width: 100%;
-        }
-        #volume-control {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        #volume-control label {
-            font-size: 16px;
-            -webkit-text-stroke: 1px #000;
-            text-shadow: 2px 2px 4px #000;
-        }
-        #volume-slider {
-            width: 80%;
-            cursor: pointer;
         }
         @keyframes pop {
             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
@@ -347,9 +337,6 @@
                 padding: 20px 40px;
                 font-size: 32px;
             }
-            #volume-control label {
-                font-size: 14px;
-            }
         }
     </style>
 </head>
@@ -358,7 +345,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.11</div>
+            <div id="version">v1.12</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -366,10 +353,6 @@
                 <p>Остерегайся пробегающих собак и падающих орехов!</p>
                 <button id="pushok-btn">Пушок</button>
                 <button id="fenya-btn">Феня</button>
-                <div id="volume-control">
-                    <label for="volume-slider">Громкость музыки:</label>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
-                </div>
             </div>
             <div id="game-over" style="display: none;">
                 <h2>Игра окончена!</h2>
@@ -411,14 +394,12 @@
         const leftBtn = document.getElementById('left-btn');
         const rightBtn = document.getElementById('right-btn');
         const jumpBtn = document.getElementById('jump-btn');
-        const volumeSlider = document.getElementById('volume-slider');
 
         // Звуки
-        const soundtrack = new Audio('soundtrack.wav');
-        soundtrack.loop = true;
         const woofSound = new Audio('woof.wav');
         const bonusSound = new Audio('bonus.wav');
         const jumpSound = new Audio('jump.wav');
+        const nutSound = new Audio('nut.wav');
 
         // Динамические размеры в зависимости от устройства
         const isMobile = window.innerWidth <= 600;
@@ -452,12 +433,6 @@
         document.querySelectorAll('.score-pop').forEach(pop => {
             pop.style.fontSize = `${24 * scaleFactor}px`;
         });
-
-        // Управление громкостью саундтрека
-        volumeSlider.addEventListener('input', () => {
-            soundtrack.volume = volumeSlider.value;
-        });
-        soundtrack.volume = volumeSlider.value; // Устанавливаем начальную громкость
 
         // Обработчики событий для кнопок с поддержкой мультитач
         const touches = new Map();
@@ -524,9 +499,8 @@
         function startGame(catType) {
             selectedCat = catType;
             cat.style.backgroundImage = `url(${catType === 'pushok' ? 'pushok.png' : 'fenya.png'})`;
-            cat.style.backgroundColor = 'transparent'; // Убираем градиент
+            cat.style.backgroundColor = 'transparent';
             menu.style.display = 'none';
-            soundtrack.play();
             initGame();
             console.log(`Котик выбран: ${catType === 'pushok' ? 'Пушок' : 'Феня'}`);
             spawnDogRandomly();
@@ -709,7 +683,7 @@
                     catY = currentPlatform.y - 40 * scaleFactor;
                     isJumping = false;
                     velocityY = 0;
-                    cat.style.transform = 'rotate(0deg)';
+                    cat.style.animation = ''; // Убираем анимацию после приземления
                     console.log('Кот приземлился на текущую платформу после прыжка');
                 }
             }
@@ -725,8 +699,8 @@
                 catY = onPlatform.y - 40 * scaleFactor;
                 isJumping = false;
                 velocityY = 0;
+                cat.style.animation = '';
                 currentPlatform = onPlatform;
-                cat.style.transform = 'rotate(0deg)';
             } else if (!onPlatform && !isJumping && currentPlatform) {
                 if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
@@ -740,7 +714,7 @@
                 catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 20 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
                 isJumping = false;
                 velocityY = 0;
-                cat.style.transform = 'rotate(0deg)';
+                cat.style.animation = '';
                 cat.classList.add('blink');
                 setTimeout(() => cat.classList.remove('blink'), 2000);
                 updateLives();
@@ -773,7 +747,7 @@
             if (onPlatform) {
                 isJumping = true;
                 velocityY = -15 * scaleFactor;
-                cat.style.transform = 'rotate(360deg)';
+                cat.style.animation = 'jumpAnimation 0.5s ease-in-out';
                 jumpSound.play();
                 console.log('Прыжок начался');
             }
@@ -860,7 +834,7 @@
                         catY = p.y - 40 * scaleFactor;
                         isJumping = false;
                         velocityY = 0;
-                        cat.style.transform = 'rotate(0deg)';
+                        cat.style.animation = '';
                         if (!visitedPlatforms.has(p.id)) {
                             visitedPlatforms.add(p.id);
                             animateScore(score, score + 10);
@@ -1051,6 +1025,7 @@
             nut.element.style.width = `${20 * scaleFactor}px`;
             nut.element.style.height = `${20 * scaleFactor}px`;
             gameContainer.appendChild(nut.element);
+            nutSound.play();
         }
 
         function updateNut() {
@@ -1087,7 +1062,6 @@
             gameActive = false;
             movingLeft = false;
             movingRight = false;
-            soundtrack.pause();
             gameOver.style.display = 'block';
             finalScore.textContent = `Очки: ${score}`;
             finalSteps.textContent = `Ступеней: ${steps}`;
@@ -1106,7 +1080,6 @@
             gameActive = true;
             movingLeft = false;
             movingRight = false;
-            soundtrack.play();
             gameLoop();
         }
 
@@ -1124,7 +1097,6 @@
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
             movingLeft = false;
             movingRight = false;
-            soundtrack.play();
             startGame(selectedCat);
         }
 
