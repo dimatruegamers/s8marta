@@ -12,30 +12,28 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            width: 100vw;
+            min-height: 100vh;
             background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
             font-family: 'Comic Neue', cursive;
             overflow: hidden;
-            touch-action: manipulation; /* Отключает масштабирование при двойном касании */
+            touch-action: manipulation; /* Блокирует масштабирование и прокрутку на мобильных */
         }
         #game-wrapper {
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
-            height: 100%;
+            gap: 20px;
         }
         #game-container {
             position: relative;
-            width: 100vw;
-            height: calc(100vh - 100px); /* Оставляем место для кнопок */
+            width: 600px;
+            height: 600px;
             background: linear-gradient(135deg, #d4fc79, #96e6a1);
-            border-radius: 0; /* Убираем скругления для полного экрана */
+            border-radius: 30px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             overflow: hidden;
-            border: none;
+            border: 6px solid rgba(255,255,255,0.9);
         }
         #cat {
             position: absolute;
@@ -185,22 +183,17 @@
             background: rgba(255, 182, 193, 0.9);
         }
         .controls {
-            position: fixed;
-            bottom: 0;
-            width: 100vw;
-            height: 100px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            width: 600px;
+            gap: 20px;
             padding: 10px;
             box-sizing: border-box;
             z-index: 30;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
         }
         .left-controls {
             display: flex;
-            gap: 20px;
+            gap: 15px;
         }
         button {
             padding: 15px 30px;
@@ -214,8 +207,8 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            touch-action: manipulation; /* Убирает нежелательные эффекты при касании */
-            -webkit-tap-highlight-color: transparent; /* Убирает подсветку при нажатии */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         button:active {
             transform: scale(0.95);
@@ -240,6 +233,28 @@
         @keyframes scoreFade {
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-30px) scale(1.2); }
+        }
+
+        /* Адаптация для мобильных устройств */
+        @media only screen and (max-width: 600px) {
+            #game-container {
+                width: 100vw;
+                height: calc(100vh - 100px); /* Оставляем место для кнопок */
+                border-radius: 0;
+                border: none;
+            }
+            .controls {
+                position: fixed;
+                bottom: 0;
+                width: 100vw;
+                height: 100px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                background: rgba(255,255,255,0.1);
+                backdrop-filter: blur(10px);
+            }
         }
     </style>
 </head>
@@ -269,10 +284,10 @@
         </div>
         <div class="controls">
             <div class="left-controls">
-                <button id="left-btn" ontouchstart="moveLeft(true)" ontouchend="moveLeft(false)">←</button>
-                <button id="right-btn" ontouchstart="moveRight(true)" ontouchend="moveRight(false)">→</button>
+                <button id="left-btn" onmousedown="moveLeft(true)" onmouseup="moveLeft(false)" ontouchstart="moveLeft(true)" ontouchend="moveLeft(false)">←</button>
+                <button id="right-btn" onmousedown="moveRight(true)" onmouseup="moveRight(false)" ontouchstart="moveRight(true)" ontouchend="moveRight(false)">→</button>
             </div>
-            <button id="jump-btn" ontouchstart="jump()">Прыжок</button>
+            <button id="jump-btn" onmousedown="jump()" ontouchstart="jump()">Прыжок</button>
         </div>
     </div>
 
@@ -288,7 +303,7 @@
         const finalScore = document.getElementById('final-score');
         const finalSteps = document.getElementById('final-steps');
 
-        let catX = window.innerWidth / 2 - 20, catY = window.innerHeight - 140, velocityY = 0, isJumping = false;
+        let catX = 280, catY = 560, velocityY = 0, isJumping = false;
         let score = 0, lives = 1, platforms = [], bonuses = [], dog = null;
         let movingLeft = false, movingRight = false;
         let selectedCat = null, worldOffset = 0;
@@ -316,8 +331,8 @@
             platforms = [];
             generateInitialPlatforms();
             
-            catX = window.innerWidth / 2 - 20;
-            catY = window.innerHeight - 140;
+            catX = platforms[0].x + platforms[0].width / 2 - 20; // Кот появляется на первой платформе
+            catY = platforms[0].y - 40;
             currentPlatform = platforms[0];
             cat.style.left = `${catX}px`;
             cat.style.top = `${catY}px`;
@@ -343,8 +358,8 @@
 
         function addNewPlatform() {
             platformCount++;
-            const x = Math.floor(Math.random() * (window.innerWidth - 100)) + 50;
-            const y = platforms.length ? platforms[platforms.length - 1].y - 150 : window.innerHeight - 100;
+            const x = Math.floor(Math.random() * 400) + 50;
+            const y = platforms.length ? platforms[platforms.length - 1].y - 150 : 560;
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
             let width = isSmall ? 50 : 100;
             if (platformCount > 40) {
@@ -398,13 +413,13 @@
 
             if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
                 catX += currentPlatform.speed;
-                catX = Math.max(0, Math.min(window.innerWidth - 40, catX));
+                catX = Math.max(0, Math.min(560, catX));
             }
 
             if (movingLeft) catX -= 5;
             if (movingRight) catX += 5;
 
-            catX = Math.max(0, Math.min(window.innerWidth - 40, catX));
+            catX = Math.max(0, Math.min(560, catX));
 
             if (isJumping) {
                 catY += velocityY;
@@ -427,7 +442,7 @@
                 if (catX < currentPlatform.x || catX + 40 > currentPlatform.x + currentPlatform.width) {
                     isJumping = true; // Кот падает, если вышел за границы без прыжка
                 }
-            } else if (catY >= window.innerHeight) {
+            } else if (catY >= 600) {
                 if (lives > 0) {
                     lives--;
                     catY = currentPlatform ? currentPlatform.y - 40 : platforms[0].y - 40;
@@ -487,7 +502,7 @@
                 if (p.count >= 20) {
                     p.x += p.speed;
                     if (p.x <= 0) p.speed = 2;
-                    if (p.x >= window.innerWidth - p.width) p.speed = -2;
+                    if (p.x >= 460) p.speed = -2;
                     p.element.style.left = `${p.x}px`;
                 }
             });
@@ -516,7 +531,7 @@
                     dog.y += worldOffset;
                     dog.element.style.top = `${dog.y}px`;
                 }
-                if (platforms[0].y > window.innerHeight) {
+                if (platforms[0].y > 600) {
                     platforms.shift().element.remove();
                     addNewPlatform();
                 }
@@ -618,7 +633,7 @@
         function spawnDog() {
             dog = {
                 x: -40,
-                y: currentPlatform ? currentPlatform.y - 30 : window.innerHeight - 100,
+                y: currentPlatform ? currentPlatform.y - 30 : 560,
                 element: document.createElement('div')
             };
             dog.element.id = 'dog';
@@ -630,7 +645,7 @@
         function updateDog() {
             dog.x += 5;
             dog.element.style.left = `${dog.x}px`;
-            if (dog.x > window.innerWidth) {
+            if (dog.x > 600) {
                 dog.element.remove();
                 dog = null;
             } else if (
@@ -686,10 +701,21 @@
             winScreen.style.display = 'none';
             platforms.forEach(p => p.element.remove());
             bonuses.forEach(b => b.element.remove());
-            catX = window.innerWidth / 2 - 20;
-            catY = window.innerHeight - 140;
+            catX = 280;
+            catY = 560;
             startGame(selectedCat);
         }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft(true);
+            if (e.key === 'ArrowRight') moveRight(true);
+            if (e.key === ' ') jump();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft(false);
+            if (e.key === 'ArrowRight') moveRight(false);
+        });
     </script>
 </body>
 </html>
