@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: 'JoyStix';
-            src: url('joystix.ttf') format('truetype'); /* Укажите путь к вашему файлу шрифта */
+            src: url('joystix.ttf') format('truetype'); /* Укажите путь к файлу шрифта JoyStix */
             font-weight: normal;
             font-style: normal;
         }
@@ -110,11 +110,26 @@
             z-index: 10;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
+        .spikes {
+            position: absolute;
+            background: linear-gradient(45deg, #555, #333);
+            border-radius: 4px;
+            z-index: 12;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .spike {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid #000;
+        }
         #score, #steps, #version, #menu, #game-over, #win-screen, button {
             font-family: 'JoyStix', sans-serif;
             color: #fff;
-            -webkit-text-stroke: 1px #000; /* Чёрная обводка */
-            text-shadow: 2px 2px 4px #000; /* Чёрная тень */
+            -webkit-text-stroke: 1px #000;
+            text-shadow: 2px 2px 4px #000;
         }
         #score {
             position: absolute;
@@ -174,12 +189,12 @@
             max-width: 400px;
         }
         #menu h1 {
-            font-size: 24px;
-            margin: 0 0 10px 0;
+            font-size: 36px; /* Увеличиваем заголовок */
+            margin: 0 0 15px 0;
         }
         #menu p {
-            font-size: 16px;
-            margin: 0 0 15px 0;
+            font-size: 20px; /* Увеличиваем предупреждение */
+            margin: 0 0 20px 0;
         }
         #menu button {
             margin: 10px;
@@ -245,6 +260,19 @@
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-15px) scale(1.2); }
         }
+        .star-particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: yellow;
+            border-radius: 50%;
+            z-index: 20;
+            animation: starFade 0.5s forwards;
+        }
+        @keyframes starFade {
+            0% { opacity: 1; transform: scale(1) translate(0, 0); }
+            100% { opacity: 0; transform: scale(1.5) translate(var(--dx), var(--dy)); }
+        }
 
         @media only screen and (max-width: 600px) {
             body {
@@ -294,10 +322,10 @@
                 padding: 15px;
             }
             #menu h1 {
-                font-size: 20px;
+                font-size: 28px; /* Уменьшенный увеличенный размер для мобильных */
             }
             #menu p {
-                font-size: 14px;
+                font-size: 16px; /* Уменьшенный увеличенный размер для мобильных */
             }
             button {
                 padding: 20px 40px;
@@ -323,7 +351,7 @@
             <div id="game-over" style="display: none;">
                 <h2>Игра окончена!</h2>
                 <p id="final-score">Очки: 0</p>
-                <p id="final-steps">Ступенейff: 0</p>
+                <p id="final-steps">Ступеней: 0</p>
                 <button id="restart-btn">Играть заново</button>
             </div>
             <div id="win-screen" style="display: none;">
@@ -372,7 +400,7 @@
         gameContainer.style.height = `${baseHeight}px`;
 
         let catX = baseWidth / 2 - 20 * scaleFactor, catY = 0, velocityY = 0, isJumping = false;
-        let score = 0, lives = 1, platforms = [], bonuses = [], dog = null, nut = null;
+        let score = 0, lives = 1, platforms = [], bonuses = [], spikes = [], dog = null, nut = null;
         let movingLeft = false, movingRight = false;
         let selectedCat = null, worldOffset = 0;
         let gameActive = true, visitedPlatforms = new Set();
@@ -471,10 +499,12 @@
             visitedPlatforms.clear();
             platforms.forEach(p => p.element.remove());
             bonuses.forEach(b => b.element.remove());
+            spikes.forEach(s => s.element.remove());
             if (dog) dog.element.remove();
             if (nut) nut.element.remove();
             bonuses = [];
             platforms = [];
+            spikes = [];
             dog = null;
             nut = null;
             generateInitialPlatforms();
@@ -551,6 +581,11 @@
             } else if (platformCount % 8 === 0) {
                 addBonus('food', platformObj);
             }
+
+            // Добавляем шипы на платформы 7, 15, 20, 29
+            if ([7, 15, 20, 29].includes(platformCount)) {
+                addSpikes(platformObj);
+            }
         }
 
         function addBonus(type, platform) {
@@ -568,7 +603,44 @@
             bonus.element.style.height = `${type === 'food' ? 20 * scaleFactor : 20 * scaleFactor}px`;
             gameContainer.appendChild(bonus.element);
             bonuses.push(bonus);
-            console.log(`Бонус появился: ${type === 'heart' ? 'сердце' : 'еда'} на платформе ${platformCount}, x: ${bonus.x}, y: ${bonus.y}`);
+            console.log(`Бонус появился: ${type === 'heart' ? 'сердце' : 'еда'} на платформе ${platform.count}, x: ${bonus.x}, y: ${bonus.y}`);
+        }
+
+        function addSpikes(platform) {
+            const spikeWidth = platform.width * 0.2; // 20% ширины платформы
+            const spikeHeight = 10 * scaleFactor; // Высота шипов
+            const spikeX = platform.x + (platform.width - spikeWidth) * Math.random(); // Случайное положение по горизонтали
+            const spikeY = platform.y - spikeHeight;
+
+            const spikeContainer = document.createElement('div');
+            spikeContainer.className = 'spikes';
+            spikeContainer.style.left = `${spikeX}px`;
+            spikeContainer.style.top = `${spikeY}px`;
+            spikeContainer.style.width = `${spikeWidth}px`;
+            spikeContainer.style.height = `${spikeHeight}px`;
+            gameContainer.appendChild(spikeContainer);
+
+            // Добавляем несколько треугольников-шипов внутри контейнера
+            const spikeCount = Math.floor(spikeWidth / (10 * scaleFactor)); // Количество шипов в зависимости от ширины
+            for (let i = 0; i < spikeCount; i++) {
+                const spike = document.createElement('div');
+                spike.className = 'spike';
+                spike.style.left = `${(i * 10 * scaleFactor) + (spikeWidth - spikeCount * 10 * scaleFactor) / 2}px`;
+                spike.style.top = `0`;
+                spikeContainer.appendChild(spike);
+            }
+
+            const spikeObj = {
+                x: spikeX,
+                y: spikeY,
+                width: spikeWidth,
+                height: spikeHeight,
+                element: spikeContainer,
+                active: true,
+                parentPlatform: platform
+            };
+            spikes.push(spikeObj);
+            console.log(`Шипы добавлены на платформу ${platform.count}, x: ${spikeX}, y: ${spikeY}`);
         }
 
         function gameLoop() {
@@ -587,14 +659,13 @@
             }
 
             if (isJumping) {
-                const previousY = catY; // Сохраняем предыдущую позицию Y
+                const previousY = catY;
                 catY += velocityY;
                 velocityY += 0.5 * scaleFactor;
 
-                // Проверяем столкновение с текущей платформой при падении
                 if (currentPlatform && 
                     catY + 40 * scaleFactor >= currentPlatform.y && 
-                    previousY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && // Проверяем, что кот был выше платформы
+                    previousY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && 
                     catX + 40 * scaleFactor > currentPlatform.x && 
                     catX < currentPlatform.x + currentPlatform.width && 
                     velocityY >= 0) {
@@ -620,7 +691,6 @@
                 currentPlatform = onPlatform;
                 cat.style.transform = 'rotate(0deg)';
             } else if (!onPlatform && !isJumping && currentPlatform) {
-                // Падение, если кот вышел за границы платформы
                 if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
                     console.log('Кот вышел за границы платформы, падение началось');
@@ -699,6 +769,13 @@
                     b.element.style.left = `${b.x}px`;
                 }
             });
+
+            spikes.forEach(s => {
+                if (s.active && s.parentPlatform.count >= 20) {
+                    s.x = s.parentPlatform.x + (s.parentPlatform.width - s.width) * (s.x - s.parentPlatform.x) / s.parentPlatform.width;
+                    s.element.style.left = `${s.x}px`;
+                }
+            });
         }
 
         function adjustWorld() {
@@ -712,6 +789,10 @@
                 bonuses.forEach(b => {
                     b.y += worldOffset;
                     b.element.style.top = `${b.y}px`;
+                });
+                spikes.forEach(s => {
+                    s.y += worldOffset;
+                    s.element.style.top = `${s.y}px`;
                 });
                 if (dog) {
                     dog.y += worldOffset;
@@ -766,18 +847,40 @@
                             lives++;
                             updateLives();
                             console.log(`Собрано сердце, жизней: ${lives}`);
+                            showStarParticles(b.x + bonusWidth / 2, b.y);
                         } else {
                             animateScore(score, score + 100);
                             showScorePopup('+100', 'heart-pop');
                             console.log(`Собрано сердце, +100 очков, очки: ${score}`);
+                            showStarParticles(b.x + bonusWidth / 2, b.y);
                         }
                     } else if (b.type === 'food') {
                         animateScore(score, score + 50);
                         showScorePopup('+50', 'food-pop');
                         console.log(`Собрана еда, +50 очков, очки: ${score}`);
+                        showStarParticles(b.x + bonusWidth / 2, b.y);
                     }
                     b.element.remove();
                     bonuses.splice(index, 1);
+                }
+            });
+
+            spikes.forEach((s, index) => {
+                if (s.active && 
+                    catX + 40 * scaleFactor > s.x && 
+                    catX < s.x + s.width && 
+                    catY + 40 * scaleFactor > s.y && 
+                    catY < s.y + s.height && 
+                    lives > 0) {
+                    lives--;
+                    updateLives();
+                    cat.classList.add('blink');
+                    setTimeout(() => cat.classList.remove('blink'), 2000);
+                    console.log(`Кот коснулся шипов, жизнь потеряна, жизней: ${lives}`);
+                    s.element.remove();
+                    s.active = false;
+                    spikes.splice(index, 1);
+                    if (lives <= 0) endGame();
                 }
             });
 
@@ -795,6 +898,23 @@
                 nut.element.remove();
                 nut = null;
                 if (lives <= 0) endGame();
+            }
+        }
+
+        function showStarParticles(x, y) {
+            for (let i = 0; i < 6; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 20 * scaleFactor;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                star.style.setProperty('--dx', `${dx}px`);
+                star.style.setProperty('--dy', `${dy}px`);
+                gameContainer.appendChild(star);
+                setTimeout(() => star.remove(), 500);
             }
         }
 
@@ -953,6 +1073,7 @@
             winScreen.style.display = 'none';
             platforms.forEach(p => p.element.remove());
             bonuses.forEach(b => b.element.remove());
+            spikes.forEach(s => s.element.remove());
             if (dog) dog.element.remove();
             if (nut) nut.element.remove();
             dog = null;
