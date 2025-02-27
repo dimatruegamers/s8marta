@@ -126,11 +126,20 @@
             border-right: 5px solid transparent;
             border-bottom: 10px solid #000;
         }
-        #score, #steps, #version, #menu, #game-over, #win-screen, button {
+        #score, #steps, #menu, #game-over, #win-screen, button {
             font-family: 'JoyStix', sans-serif;
             color: #fff;
-            -webkit-text-stroke: 2px #000;
-            text-shadow: 2px 2px 4px #000;
+            -webkit-text-stroke: 1px #000; /* Чёрная обводка */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Еле заметная тень */
+        }
+        #version {
+            font-family: 'JoyStix', sans-serif;
+            color: #fff; /* Просто белый текст */
+            position: absolute;
+            top: 2%;
+            right: 5%;
+            font-size: 12px;
+            z-index: 20;
         }
         #score {
             position: absolute;
@@ -147,14 +156,6 @@
             padding: 1% 2%;
             border-radius: 12px;
             z-index: 20;
-        }
-        #version {
-            position: absolute;
-            top: 2%;
-            right: 5%;
-            font-size: 12px;
-            z-index: 20;
-            text-shadow: none;
         }
         #lives {
             position: absolute;
@@ -203,13 +204,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px; /* Увеличен отступ */
-            padding: 15px 20px;
+            gap: 15px;
+            padding: 15px 20px 25px 20px; /* Добавлен отступ снизу */
         }
         #pushok-btn::before, #fenya-btn::before {
             content: '';
             display: inline-block;
-            width: 50px; /* Увеличено поле для иконки */
+            width: 50px;
             height: 40px;
             background-size: cover;
         }
@@ -270,8 +271,8 @@
             z-index: 20;
             animation: scoreFade 1s forwards;
             font-family: 'JoyStix', sans-serif;
-            -webkit-text-stroke: 2px #000;
-            text-shadow: 2px 2px 4px #000;
+            -webkit-text-stroke: 1px #000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
         .heart-pop { color: #ff1493; }
         .food-pop { color: #8b4513; }
@@ -358,7 +359,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.15</div>
+            <div id="version">v1.16</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -436,7 +437,7 @@
         let hasWon = false;
         let catFacingRight = false;
 
-        // Адаптация размеров элементов (возвращены почти исходные, кроме собаки)
+        // Адаптация размеров элементов
         cat.style.width = `${48 * scaleFactor}px`;
         cat.style.height = `${40 * scaleFactor}px`;
         document.querySelectorAll('.heart').forEach(heart => {
@@ -673,15 +674,15 @@
 
             if (movingLeft) {
                 catX -= 5 * scaleFactor;
-                if (!catFacingRight) {
-                    cat.style.transform = 'scaleX(-1)'; // Смотрит влево
+                if (catFacingRight) { // Если смотрит вправо, поворачиваем влево
+                    cat.style.transform = 'scaleX(-1)';
                     catFacingRight = false;
                 }
             }
             if (movingRight) {
                 catX += 5 * scaleFactor;
-                if (catFacingRight) {
-                    cat.style.transform = 'scaleX(1)'; // Смотрит вправо
+                if (!catFacingRight) { // Если смотрит влево, поворачиваем вправо
+                    cat.style.transform = 'scaleX(1)';
                     catFacingRight = true;
                 }
             }
@@ -1014,14 +1015,14 @@
 
         function spawnDog() {
             dog = {
-                x: -80 * scaleFactor, // Увеличенная собака
+                x: -80 * scaleFactor,
                 y: currentPlatform ? currentPlatform.y - 60 * scaleFactor : baseHeight - 40 * scaleFactor,
                 element: document.createElement('div')
             };
             dog.element.id = 'dog';
             dog.element.style.left = `${dog.x}px`;
             dog.element.style.top = `${dog.y}px`;
-            dog.element.style.width = `${80 * scaleFactor}px`; // Увеличено
+            dog.element.style.width = `${80 * scaleFactor}px`;
             dog.element.style.height = `${60 * scaleFactor}px`;
             gameContainer.appendChild(dog.element);
             woofSound.play();
