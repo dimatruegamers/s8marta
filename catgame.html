@@ -19,7 +19,7 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
             font-family: 'Poppins', sans-serif;
-            touch-action: none; /* Убираем стандартное поведение */
+            touch-action: none;
         }
         #game-wrapper {
             position: relative;
@@ -118,6 +118,15 @@
             border-radius: 12px;
             z-index: 20;
         }
+        #version {
+            position: absolute;
+            top: 2%;
+            right: 5%;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 400;
+            z-index: 20;
+        }
         #lives {
             position: absolute;
             top: 5%;
@@ -176,7 +185,7 @@
             padding: 10px;
             box-sizing: border-box;
             z-index: 1000;
-            user-select: none; /* Предотвращаем выделение текста */
+            user-select: none;
         }
         .left-controls {
             display: flex;
@@ -232,7 +241,7 @@
             }
             #game-container {
                 width: 100vw;
-                height: calc(100vh - 80px);
+                height: calc(100vh - 120px); /* Увеличиваем место под кнопки */
                 border-radius: 0;
                 border: none;
                 position: relative;
@@ -246,15 +255,20 @@
             #steps {
                 top: 8%;
             }
+            #version {
+                top: 2%;
+                right: 5%;
+                font-size: 10px;
+            }
             .controls {
                 position: fixed;
-                bottom: 0;
+                bottom: 10px; /* Поднимаем выше от низа */
                 width: 100vw;
-                height: 80px;
+                height: 120px; /* Увеличиваем высоту под большие кнопки */
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 10px;
+                padding: 20px;
                 background: rgba(255,255,255,0.1);
                 backdrop-filter: blur(10px);
                 z-index: 1000;
@@ -265,8 +279,8 @@
                 padding: 15px;
             }
             button {
-                font-size: 16px;
-                padding: 10px 20px;
+                padding: 20px 40px; /* Увеличиваем размер в 2 раза */
+                font-size: 32px; /* Увеличиваем текст в 2 раза */
             }
         }
     </style>
@@ -276,6 +290,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
+            <div id="version">v1.0</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -328,7 +343,7 @@
         // Динамические размеры в зависимости от устройства
         const isMobile = window.innerWidth <= 600;
         const baseWidth = isMobile ? window.innerWidth : 600;
-        const baseHeight = isMobile ? window.innerHeight - 80 : 600; // 100vh - 80px на мобильных
+        const baseHeight = isMobile ? window.innerHeight - 120 : 600; // Увеличиваем место под кнопки на мобильных
         const scaleFactor = baseWidth / 600; // Масштаб относительно базового 600px
 
         // Применяем размеры
@@ -359,7 +374,7 @@
         });
 
         // Обработчики событий для кнопок с поддержкой мультитач
-        const touches = new Map(); // Отслеживаем активные касания
+        const touches = new Map();
 
         pushokBtn.addEventListener('click', () => startGame('pushok'));
         pushokBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startGame('pushok'); });
@@ -376,7 +391,6 @@
         rightBtn.addEventListener('mouseup', () => moveRight(false));
         jumpBtn.addEventListener('mousedown', jump);
 
-        // Мультитач для кнопок
         leftBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             for (let touch of e.changedTouches) {
@@ -417,7 +431,6 @@
                 if (action === 'right') moveRight(false);
                 touches.delete(touch.identifier);
             }
-            // Очищаем состояния при отмене касания
             movingLeft = false;
             movingRight = false;
         });
@@ -452,7 +465,7 @@
             gameActive = true;
             isJumping = false;
             velocityY = 0;
-            movingLeft = false; // Очищаем состояния
+            movingLeft = false;
             movingRight = false;
             hasWon = false;
             updateScore();
@@ -471,17 +484,18 @@
             platformCount++;
             const maxJumpHeight = 150 * scaleFactor;
             const maxJumpDistance = 150 * scaleFactor;
-            const minHorizontalGap = 160 * scaleFactor;
-            const maxHorizontalGap = 240 * scaleFactor;
-            const minVerticalGap = 117 * scaleFactor;
+            const minHorizontalGap = 100 * scaleFactor; // Минимум 100px в любую сторону
+            const maxHorizontalGap = 240 * scaleFactor; // Максимум 240px
+            const minVerticalGap = 234 * scaleFactor; // Увеличено в 2 раза
             const maxVerticalGap = 225 * scaleFactor;
+            const direction = Math.random() < 0.5 ? -1 : 1;
             const x = platforms.length ? 
                 Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
-                    platforms[platforms.length - 1].x + (Math.random() * (maxHorizontalGap - minHorizontalGap) + minHorizontalGap) * (Math.random() < 0.5 ? 1 : -1))) : 
+                    platforms[platforms.length - 1].x + direction * (Math.random() * (maxHorizontalGap - minHorizontalGap) + minHorizontalGap))) : 
                 Math.floor(Math.random() * (baseWidth - 100 * scaleFactor)) + 50 * scaleFactor;
             const y = platforms.length ? 
                 platforms[platforms.length - 1].y - (Math.random() * (maxVerticalGap - minVerticalGap) + minVerticalGap) : 
-                baseHeight * 0.9 - 40 * scaleFactor;
+                baseHeight * 0.8 - 40 * scaleFactor; // Поднимаем первую платформу выше
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
             let width = isSmall ? 50 * scaleFactor : 100 * scaleFactor;
             if (platformCount > 40) {
@@ -591,7 +605,7 @@
 
             if (score >= 1000 && !hasWon) {
                 gameActive = false;
-                movingLeft = false; // Очищаем состояния при выигрыше
+                movingLeft = false;
                 movingRight = false;
                 winScreen.style.display = 'block';
                 hasWon = true;
@@ -813,7 +827,7 @@
 
         function endGame() {
             gameActive = false;
-            movingLeft = false; // Очищаем состояния при проигрыше
+            movingLeft = false;
             movingRight = false;
             gameOver.style.display = 'block';
             finalScore.textContent = `Очки: ${score}`;
@@ -827,7 +841,7 @@
         function continueGame() {
             winScreen.style.display = 'none';
             gameActive = true;
-            movingLeft = false; // Очищаем состояния при продолжении
+            movingLeft = false;
             movingRight = false;
             gameLoop();
         }
@@ -839,7 +853,7 @@
             bonuses.forEach(b => b.element.remove());
             catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor : baseWidth / 2 - 20 * scaleFactor;
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
-            movingLeft = false; // Очищаем состояния при рестарте
+            movingLeft = false;
             movingRight = false;
             startGame(selectedCat);
         }
