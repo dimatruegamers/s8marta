@@ -122,29 +122,30 @@
             position: absolute;
             width: 0;
             height: 0;
-            border-left: 10px solid transparent; /* Увеличено в 2 раза */
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid #000;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid #000;
         }
         #score, #steps, #version, #menu, #game-over, #win-screen, button {
             font-family: 'JoyStix', sans-serif;
             color: #fff;
-            -webkit-text-stroke: 2px #000; /* Утолщённая обводка для читаемости */
+            -webkit-text-stroke: 2px #000;
             text-shadow: 2px 2px 4px #000;
-            background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
-            padding: 5px 10px;
-            border-radius: 8px;
         }
         #score {
             position: absolute;
             top: 5%;
             left: 5%;
+            padding: 1% 2%;
+            border-radius: 12px;
             z-index: 20;
         }
         #steps {
             position: absolute;
             top: 15%;
             left: 5%;
+            padding: 1% 2%;
+            border-radius: 12px;
             z-index: 20;
         }
         #version {
@@ -153,14 +154,14 @@
             right: 5%;
             font-size: 12px;
             z-index: 20;
-            text-shadow: none; /* Убрана тень у версии */
+            text-shadow: none;
         }
         #lives {
             position: absolute;
             top: 5%;
             right: 5%;
             display: flex;
-            gap: 8px; /* Увеличен в 2 раза */
+            gap: 4px;
             z-index: 20;
         }
         .heart {
@@ -202,12 +203,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 15px; /* Увеличен отступ */
+            padding: 15px 20px;
         }
         #pushok-btn::before, #fenya-btn::before {
             content: '';
             display: inline-block;
-            width: 40px;
+            width: 50px; /* Увеличено поле для иконки */
             height: 40px;
             background-size: cover;
         }
@@ -270,9 +272,6 @@
             font-family: 'JoyStix', sans-serif;
             -webkit-text-stroke: 2px #000;
             text-shadow: 2px 2px 4px #000;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 8px;
         }
         .heart-pop { color: #ff1493; }
         .food-pop { color: #8b4513; }
@@ -282,8 +281,8 @@
         }
         .star-particle {
             position: absolute;
-            width: 10px; /* Увеличено в 2 раза */
-            height: 10px;
+            width: 5px;
+            height: 5px;
             background: yellow;
             border-radius: 50%;
             z-index: 20;
@@ -359,7 +358,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.14</div>
+            <div id="version">v1.15</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -426,7 +425,7 @@
         gameContainer.style.width = `${baseWidth}px`;
         gameContainer.style.height = `${baseHeight}px`;
 
-        let catX = baseWidth / 2 - 48 * scaleFactor, catY = 0, velocityY = 0, isJumping = false;
+        let catX = baseWidth / 2 - 24 * scaleFactor, catY = 0, velocityY = 0, isJumping = false;
         let score = 0, lives = 1, platforms = [], bonuses = [], spikes = [], dog = null, nut = null;
         let movingLeft = false, movingRight = false;
         let selectedCat = null, worldOffset = 0;
@@ -435,14 +434,14 @@
         let currentPlatform = null;
         let steps = 0;
         let hasWon = false;
-        let catFacingRight = false; // Направление кота
+        let catFacingRight = false;
 
-        // Адаптация размеров элементов (увеличено в 2 раза)
-        cat.style.width = `${96 * scaleFactor}px`; // 48 * 2
-        cat.style.height = `${80 * scaleFactor}px`; // 40 * 2
+        // Адаптация размеров элементов (возвращены почти исходные, кроме собаки)
+        cat.style.width = `${48 * scaleFactor}px`;
+        cat.style.height = `${40 * scaleFactor}px`;
         document.querySelectorAll('.heart').forEach(heart => {
-            heart.style.width = `${50 * scaleFactor}px`; // 25 * 2
-            heart.style.height = `${50 * scaleFactor}px`;
+            heart.style.width = `${25 * scaleFactor}px`;
+            heart.style.height = `${25 * scaleFactor}px`;
         });
 
         // Обработчики событий для кнопок с поддержкой мультитач
@@ -511,8 +510,8 @@
             selectedCat = catType;
             cat.style.backgroundImage = `url(${catType === 'pushok' ? 'pushok1.png' : 'fenya1.png'})`;
             cat.style.backgroundColor = 'transparent';
-            catFacingRight = false; // Начально кот смотрит влево
-            cat.style.transform = 'scaleX(1)'; // Без отзеркаливания
+            catFacingRight = false;
+            cat.style.transform = 'scaleX(-1)'; // Начально смотрит влево
             menu.style.display = 'none';
             initGame();
             console.log(`Котик выбран: ${catType === 'pushok' ? 'Пушок' : 'Феня'}`);
@@ -535,8 +534,8 @@
             nut = null;
             generateInitialPlatforms();
             
-            catX = platforms[0].x + platforms[0].width / 2 - 48 * scaleFactor; // Центрируем увеличенного кота
-            catY = platforms[0].y - 80 * scaleFactor; // Учитываем новую высоту
+            catX = platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor;
+            catY = platforms[0].y - 40 * scaleFactor;
             currentPlatform = platforms[0];
             cat.style.left = `${catX}px`;
             cat.style.top = `${catY}px`;
@@ -564,31 +563,31 @@
 
         function addNewPlatform() {
             platformCount++;
-            const maxJumpHeight = 300 * scaleFactor; // 150 * 2
-            const maxJumpDistance = 300 * scaleFactor; // 150 * 2
-            const minHorizontalGap = 200 * scaleFactor; // 100 * 2
-            const maxHorizontalGap = 480 * scaleFactor; // 240 * 2
-            const minVerticalGap = 358 * scaleFactor; // 179 * 2
-            const maxVerticalGap = 424 * scaleFactor; // 212 * 2
+            const maxJumpHeight = 150 * scaleFactor;
+            const maxJumpDistance = 150 * scaleFactor;
+            const minHorizontalGap = 100 * scaleFactor;
+            const maxHorizontalGap = 240 * scaleFactor;
+            const minVerticalGap = 179 * scaleFactor;
+            const maxVerticalGap = 212 * scaleFactor;
             const direction = Math.random() < 0.5 ? -1 : 1;
             const x = platforms.length ? 
-                Math.max(0, Math.min(baseWidth - 200 * scaleFactor, 
+                Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
                     platforms[platforms.length - 1].x + direction * (Math.random() * (maxHorizontalGap - minHorizontalGap) + minHorizontalGap))) : 
-                Math.floor(Math.random() * (baseWidth - 200 * scaleFactor)) + 100 * scaleFactor;
+                Math.floor(Math.random() * (baseWidth - 100 * scaleFactor)) + 50 * scaleFactor;
             const y = platforms.length ? 
                 platforms[platforms.length - 1].y - (Math.random() * (maxVerticalGap - minVerticalGap) + minVerticalGap) : 
-                baseHeight * 0.8 - 80 * scaleFactor;
+                baseHeight * 0.8 - 40 * scaleFactor;
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
-            let width = isSmall ? 100 * scaleFactor : 200 * scaleFactor; // 50 * 2, 100 * 2
+            let width = isSmall ? 50 * scaleFactor : 100 * scaleFactor;
             if (platformCount > 40) {
-                width = Math.max(50 * scaleFactor, 200 * scaleFactor - (platformCount - 40) * 0.5 * scaleFactor); // Уменьшение меньше
+                width = Math.max(25 * scaleFactor, 100 * scaleFactor - (platformCount - 40) * 0.5 * scaleFactor);
             }
             const platform = document.createElement('div');
             platform.className = `platform`;
             platform.style.left = `${x}px`;
             platform.style.top = `${y}px`;
             platform.style.width = `${width}px`;
-            platform.style.height = `${30 * scaleFactor}px`; // 15 * 2
+            platform.style.height = `${15 * scaleFactor}px`;
             platform.dataset.count = platformCount;
             gameContainer.appendChild(platform);
             const platformObj = { 
@@ -598,7 +597,7 @@
                 width: width, 
                 id: Date.now() + platformCount, 
                 count: platformCount,
-                speed: platformCount >= 90 ? (Math.random() * 16 - 8) * scaleFactor : (platformCount >= 20 ? (Math.random() > 0.5 ? 4 * scaleFactor : -4 * scaleFactor) : 0) // Ускорение после 90
+                speed: platformCount >= 90 ? (Math.random() * 8 - 4) * scaleFactor : (platformCount >= 20 ? (Math.random() > 0.5 ? 2 * scaleFactor : -2 * scaleFactor) : 0)
             };
             platforms.push(platformObj);
 
@@ -615,8 +614,8 @@
 
         function addBonus(type, platform) {
             const bonus = {
-                x: platform.x + platform.width / 2 - (type === 'food' ? 20 * scaleFactor : 20 * scaleFactor),
-                y: platform.y - 50 * scaleFactor, // 25 * 2
+                x: platform.x + platform.width / 2 - (type === 'food' ? 10 * scaleFactor : 10 * scaleFactor),
+                y: platform.y - 25 * scaleFactor,
                 type: type,
                 element: document.createElement('div'),
                 parentPlatform: platform
@@ -624,8 +623,8 @@
             bonus.element.className = `bonus ${type === 'heart' ? 'heart-bonus' : 'food-bonus'}`;
             bonus.element.style.left = `${bonus.x}px`;
             bonus.element.style.top = `${bonus.y}px`;
-            bonus.element.style.width = `${type === 'food' ? 40 * scaleFactor : 40 * scaleFactor}px`; // 20 * 2
-            bonus.element.style.height = `${type === 'food' ? 60 * scaleFactor : 40 * scaleFactor}px`; // 30 * 2, 20 * 2
+            bonus.element.style.width = `${type === 'food' ? 20 * scaleFactor : 20 * scaleFactor}px`;
+            bonus.element.style.height = `${type === 'food' ? 30 * scaleFactor : 20 * scaleFactor}px`;
             gameContainer.appendChild(bonus.element);
             bonuses.push(bonus);
             console.log(`Бонус появился: ${type === 'heart' ? 'сердце' : 'еда'} на платформе ${platform.count}, x: ${bonus.x}, y: ${bonus.y}`);
@@ -633,7 +632,7 @@
 
         function addSpikes(platform) {
             const spikeWidth = platform.width * 0.2;
-            const spikeHeight = 20 * scaleFactor; // 10 * 2
+            const spikeHeight = 10 * scaleFactor;
             const spikeX = platform.x + (platform.width - spikeWidth) * Math.random();
             const spikeY = platform.y - spikeHeight;
 
@@ -645,11 +644,11 @@
             spikeContainer.style.height = `${spikeHeight}px`;
             gameContainer.appendChild(spikeContainer);
 
-            const spikeCount = Math.floor(spikeWidth / (20 * scaleFactor)); // Учитываем увеличение шипов
+            const spikeCount = Math.floor(spikeWidth / (10 * scaleFactor));
             for (let i = 0; i < spikeCount; i++) {
                 const spike = document.createElement('div');
                 spike.className = 'spike';
-                spike.style.left = `${(i * 20 * scaleFactor) + (spikeWidth - spikeCount * 20 * scaleFactor) / 2}px`;
+                spike.style.left = `${(i * 10 * scaleFactor) + (spikeWidth - spikeCount * 10 * scaleFactor) / 2}px`;
                 spike.style.top = `0`;
                 spikeContainer.appendChild(spike);
             }
@@ -673,39 +672,39 @@
             updatePlatforms();
 
             if (movingLeft) {
-                catX -= 10 * scaleFactor; // 5 * 2
-                if (catFacingRight) {
-                    cat.style.transform = 'scaleX(-1)'; // Отражение влево
+                catX -= 5 * scaleFactor;
+                if (!catFacingRight) {
+                    cat.style.transform = 'scaleX(-1)'; // Смотрит влево
                     catFacingRight = false;
                 }
             }
             if (movingRight) {
-                catX += 10 * scaleFactor; // 5 * 2
-                if (!catFacingRight) {
-                    cat.style.transform = 'scaleX(1)'; // Отражение вправо
+                catX += 5 * scaleFactor;
+                if (catFacingRight) {
+                    cat.style.transform = 'scaleX(1)'; // Смотрит вправо
                     catFacingRight = true;
                 }
             }
 
-            catX = Math.max(0, Math.min(baseWidth - 96 * scaleFactor, catX));
+            catX = Math.max(0, Math.min(baseWidth - 48 * scaleFactor, catX));
 
             if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
                 catX += currentPlatform.speed;
-                catX = Math.max(0, Math.min(baseWidth - 96 * scaleFactor, catX));
+                catX = Math.max(0, Math.min(baseWidth - 48 * scaleFactor, catX));
             }
 
             if (isJumping) {
                 const previousY = catY;
                 catY += velocityY;
-                velocityY += 1 * scaleFactor; // 0.5 * 2
+                velocityY += 0.5 * scaleFactor;
 
                 if (currentPlatform && 
-                    catY + 80 * scaleFactor >= currentPlatform.y && 
-                    previousY + 80 * scaleFactor <= currentPlatform.y + 30 * scaleFactor && 
-                    catX + 96 * scaleFactor > currentPlatform.x && 
+                    catY + 40 * scaleFactor >= currentPlatform.y && 
+                    previousY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && 
+                    catX + 48 * scaleFactor > currentPlatform.x && 
                     catX < currentPlatform.x + currentPlatform.width && 
                     velocityY >= 0) {
-                    catY = currentPlatform.y - 80 * scaleFactor;
+                    catY = currentPlatform.y - 40 * scaleFactor;
                     isJumping = false;
                     velocityY = 0;
                     cat.style.animation = '';
@@ -714,20 +713,20 @@
             }
 
             const onPlatform = platforms.find(p => 
-                catY + 80 * scaleFactor >= p.y && 
-                catY + 80 * scaleFactor <= p.y + 30 * scaleFactor && 
-                catX + 96 * scaleFactor > p.x && 
+                catY + 40 * scaleFactor >= p.y && 
+                catY + 40 * scaleFactor <= p.y + 15 * scaleFactor && 
+                catX + 48 * scaleFactor > p.x && 
                 catX < p.x + p.width
             );
 
             if (onPlatform && velocityY >= 0) {
-                catY = onPlatform.y - 80 * scaleFactor;
+                catY = onPlatform.y - 40 * scaleFactor;
                 isJumping = false;
                 velocityY = 0;
                 cat.style.animation = '';
                 currentPlatform = onPlatform;
             } else if (!onPlatform && !isJumping && currentPlatform) {
-                if (catX + 96 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
+                if (catX + 48 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
                     console.log('Кот вышел за границы платформы, падение началось');
                 }
@@ -736,15 +735,15 @@
             if (catY >= baseHeight && lives > 0) {
                 lives--;
                 meowSound.play();
-                catY = currentPlatform ? currentPlatform.y - 80 * scaleFactor : platforms[0].y - 80 * scaleFactor;
-                catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 48 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 48 * scaleFactor;
+                catY = currentPlatform ? currentPlatform.y - 40 * scaleFactor : platforms[0].y - 40 * scaleFactor;
+                catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 24 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor;
                 isJumping = false;
                 velocityY = 0;
                 cat.style.animation = '';
                 cat.classList.add('blink');
                 setTimeout(() => cat.classList.remove('blink'), 2000);
                 updateLives();
-                console.log(`Жизнь потеряна, возвращён на платформу на высоте ${catY + 80 * scaleFactor}`);
+                console.log(`Жизнь потеряна, возвращён на платформу на высоте ${catY + 40 * scaleFactor}`);
                 if (!currentPlatform) currentPlatform = platforms[0];
                 if (lives <= 0) return endGame();
             }
@@ -769,10 +768,10 @@
 
         function jump() {
             if (!gameActive || isJumping) return;
-            const onPlatform = platforms.some(p => Math.abs(catY - (p.y - 80 * scaleFactor)) < 10 * scaleFactor);
+            const onPlatform = platforms.some(p => Math.abs(catY - (p.y - 40 * scaleFactor)) < 5 * scaleFactor);
             if (onPlatform) {
                 isJumping = true;
-                velocityY = -30 * scaleFactor; // 15 * 2
+                velocityY = -15 * scaleFactor;
                 cat.style.animation = 'jumpAnimation 0.5s ease-in-out';
                 jumpSound.play();
                 console.log('Прыжок начался');
@@ -803,7 +802,7 @@
 
             bonuses.forEach(b => {
                 if (b.parentPlatform.count >= 20) {
-                    b.x = b.parentPlatform.x + b.parentPlatform.width / 2 - (b.type === 'food' ? 20 * scaleFactor : 20 * scaleFactor);
+                    b.x = b.parentPlatform.x + b.parentPlatform.width / 2 - (b.type === 'food' ? 10 * scaleFactor : 10 * scaleFactor);
                     b.element.style.left = `${b.x}px`;
                 }
             });
@@ -851,13 +850,13 @@
         function checkCollisions() {
             platforms.forEach(p => {
                 if (
-                    catY + 80 * scaleFactor >= p.y && 
-                    catY + 80 * scaleFactor <= p.y + 30 * scaleFactor && 
-                    catX + 96 * scaleFactor > p.x && 
+                    catY + 40 * scaleFactor >= p.y && 
+                    catY + 40 * scaleFactor <= p.y + 15 * scaleFactor && 
+                    catX + 48 * scaleFactor > p.x && 
                     catX < p.x + p.width
                 ) {
                     if (velocityY >= 0) {
-                        catY = p.y - 80 * scaleFactor;
+                        catY = p.y - 40 * scaleFactor;
                         isJumping = false;
                         velocityY = 0;
                         cat.style.animation = '';
@@ -873,12 +872,12 @@
             });
 
             bonuses.forEach((b, index) => {
-                const bonusWidth = b.type === 'food' ? 40 * scaleFactor : 40 * scaleFactor;
-                const bonusHeight = b.type === 'food' ? 60 * scaleFactor : 40 * scaleFactor;
+                const bonusWidth = b.type === 'food' ? 20 * scaleFactor : 20 * scaleFactor;
+                const bonusHeight = b.type === 'food' ? 30 * scaleFactor : 20 * scaleFactor;
                 if (
-                    catX + 96 * scaleFactor > b.x && 
+                    catX + 48 * scaleFactor > b.x && 
                     catX < b.x + bonusWidth && 
-                    catY + 80 * scaleFactor > b.y && 
+                    catY + 40 * scaleFactor > b.y && 
                     catY < b.y + bonusHeight
                 ) {
                     bonusSound.play();
@@ -907,9 +906,9 @@
 
             spikes.forEach((s, index) => {
                 if (s.active && 
-                    catX + 96 * scaleFactor > s.x && 
+                    catX + 48 * scaleFactor > s.x && 
                     catX < s.x + s.width && 
-                    catY + 80 * scaleFactor > s.y && 
+                    catY + 40 * scaleFactor > s.y && 
                     catY < s.y + s.height && 
                     lives > 0) {
                     lives--;
@@ -926,10 +925,10 @@
             });
 
             if (nut && 
-                catX + 96 * scaleFactor > nut.x && 
-                catX < nut.x + 40 * scaleFactor && 
-                catY + 80 * scaleFactor > nut.y && 
-                catY < nut.y + 40 * scaleFactor && 
+                catX + 48 * scaleFactor > nut.x && 
+                catX < nut.x + 20 * scaleFactor && 
+                catY + 40 * scaleFactor > nut.y && 
+                catY < nut.y + 20 * scaleFactor && 
                 lives > 0) {
                 lives--;
                 meowSound.play();
@@ -943,9 +942,9 @@
             }
 
             if (dog && 
-                catX + 96 * scaleFactor > dog.x && 
+                catX + 48 * scaleFactor > dog.x && 
                 catX < dog.x + 80 * scaleFactor && 
-                catY + 80 * scaleFactor > dog.y && 
+                catY + 40 * scaleFactor > dog.y && 
                 catY < dog.y + 60 * scaleFactor && 
                 lives > 0) {
                 lives = 0;
@@ -960,7 +959,7 @@
                 const star = document.createElement('div');
                 star.className = 'star-particle';
                 const angle = Math.random() * 2 * Math.PI;
-                const distance = Math.random() * 40 * scaleFactor; // 20 * 2
+                const distance = Math.random() * 20 * scaleFactor;
                 const dx = Math.cos(angle) * distance;
                 const dy = Math.sin(angle) * distance;
                 star.style.left = `${x}px`;
@@ -997,8 +996,8 @@
             const popup = document.createElement('div');
             popup.className = `score-pop ${type}`;
             popup.textContent = text;
-            popup.style.left = `${catX + 48 * scaleFactor}px`;
-            popup.style.top = `${catY - 40 * scaleFactor}px`; // 20 * 2
+            popup.style.left = `${catX + 24 * scaleFactor}px`;
+            popup.style.top = `${catY - 20 * scaleFactor}px`;
             popup.style.fontSize = `${24 * scaleFactor}px`;
             gameContainer.appendChild(popup);
             setTimeout(() => popup.remove(), 1000);
@@ -1015,21 +1014,21 @@
 
         function spawnDog() {
             dog = {
-                x: -80 * scaleFactor, // 40 * 2
-                y: currentPlatform ? currentPlatform.y - 60 * scaleFactor : baseHeight - 80 * scaleFactor, // 30 * 2, 40 * 2
+                x: -80 * scaleFactor, // Увеличенная собака
+                y: currentPlatform ? currentPlatform.y - 60 * scaleFactor : baseHeight - 40 * scaleFactor,
                 element: document.createElement('div')
             };
             dog.element.id = 'dog';
             dog.element.style.left = `${dog.x}px`;
             dog.element.style.top = `${dog.y}px`;
-            dog.element.style.width = `${80 * scaleFactor}px`; // 40 * 2
-            dog.element.style.height = `${60 * scaleFactor}px`; // 30 * 2
+            dog.element.style.width = `${80 * scaleFactor}px`; // Увеличено
+            dog.element.style.height = `${60 * scaleFactor}px`;
             gameContainer.appendChild(dog.element);
             woofSound.play();
         }
 
         function updateDog() {
-            dog.x += 10 * scaleFactor; // 5 * 2
+            dog.x += 5 * scaleFactor;
             dog.element.style.left = `${dog.x}px`;
             if (dog.x > baseWidth) {
                 dog.element.remove();
@@ -1047,21 +1046,21 @@
 
         function spawnNut() {
             nut = {
-                x: Math.random() * (baseWidth - 40 * scaleFactor),
-                y: -40 * scaleFactor, // 20 * 2
+                x: Math.random() * (baseWidth - 20 * scaleFactor),
+                y: -20 * scaleFactor,
                 element: document.createElement('div')
             };
             nut.element.id = 'nut';
             nut.element.style.left = `${nut.x}px`;
             nut.element.style.top = `${nut.y}px`;
-            nut.element.style.width = `${40 * scaleFactor}px`; // 20 * 2
-            nut.element.style.height = `${40 * scaleFactor}px`;
+            nut.element.style.width = `${20 * scaleFactor}px`;
+            nut.element.style.height = `${20 * scaleFactor}px`;
             gameContainer.appendChild(nut.element);
             nutSound.play();
         }
 
         function updateNut() {
-            nut.y += 10 * scaleFactor; // 5 * 2
+            nut.y += 5 * scaleFactor;
             nut.element.style.top = `${nut.y}px`;
             if (nut.y > baseHeight) {
                 nut.element.remove();
@@ -1084,8 +1083,8 @@
             for (let i = 0; i < lives; i++) {
                 const heart = document.createElement('span');
                 heart.className = 'heart';
-                heart.style.width = `${50 * scaleFactor}px`;
-                heart.style.height = `${50 * scaleFactor}px`;
+                heart.style.width = `${25 * scaleFactor}px`;
+                heart.style.height = `${25 * scaleFactor}px`;
                 livesDisplay.appendChild(heart);
             }
         }
@@ -1125,8 +1124,8 @@
             if (nut) nut.element.remove();
             dog = null;
             nut = null;
-            catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 48 * scaleFactor : baseWidth / 2 - 48 * scaleFactor;
-            catY = platforms[0] ? platforms[0].y - 80 * scaleFactor : baseHeight - 80 * scaleFactor;
+            catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor : baseWidth / 2 - 24 * scaleFactor;
+            catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
             movingLeft = false;
             movingRight = false;
             startGame(selectedCat);
