@@ -48,10 +48,10 @@
         }
         #cat {
             position: absolute;
-            border-radius: 50%;
             transition: transform 0.5s ease-out;
             z-index: 10;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background-size: cover;
         }
         .platform {
             position: absolute;
@@ -189,16 +189,32 @@
             max-width: 400px;
         }
         #menu h1 {
-            font-size: 36px; /* Увеличиваем заголовок */
+            font-size: 36px;
             margin: 0 0 15px 0;
         }
         #menu p {
-            font-size: 20px; /* Увеличиваем предупреждение */
+            font-size: 20px;
             margin: 0 0 20px 0;
         }
         #menu button {
             margin: 10px;
             width: 100%;
+        }
+        #volume-control {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #volume-control label {
+            font-size: 16px;
+            -webkit-text-stroke: 1px #000;
+            text-shadow: 2px 2px 4px #000;
+        }
+        #volume-slider {
+            width: 80%;
+            cursor: pointer;
         }
         @keyframes pop {
             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
@@ -322,14 +338,17 @@
                 padding: 15px;
             }
             #menu h1 {
-                font-size: 28px; /* Уменьшенный увеличенный размер для мобильных */
+                font-size: 28px;
             }
             #menu p {
-                font-size: 16px; /* Уменьшенный увеличенный размер для мобильных */
+                font-size: 16px;
             }
             button {
                 padding: 20px 40px;
                 font-size: 32px;
+            }
+            #volume-control label {
+                font-size: 14px;
             }
         }
     </style>
@@ -339,7 +358,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.9</div>
+            <div id="version">v1.11</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -347,6 +366,10 @@
                 <p>Остерегайся пробегающих собак и падающих орехов!</p>
                 <button id="pushok-btn">Пушок</button>
                 <button id="fenya-btn">Феня</button>
+                <div id="volume-control">
+                    <label for="volume-slider">Громкость музыки:</label>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+                </div>
             </div>
             <div id="game-over" style="display: none;">
                 <h2>Игра окончена!</h2>
@@ -388,6 +411,14 @@
         const leftBtn = document.getElementById('left-btn');
         const rightBtn = document.getElementById('right-btn');
         const jumpBtn = document.getElementById('jump-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Звуки
+        const soundtrack = new Audio('soundtrack.wav');
+        soundtrack.loop = true;
+        const woofSound = new Audio('woof.wav');
+        const bonusSound = new Audio('bonus.wav');
+        const jumpSound = new Audio('jump.wav');
 
         // Динамические размеры в зависимости от устройства
         const isMobile = window.innerWidth <= 600;
@@ -421,6 +452,12 @@
         document.querySelectorAll('.score-pop').forEach(pop => {
             pop.style.fontSize = `${24 * scaleFactor}px`;
         });
+
+        // Управление громкостью саундтрека
+        volumeSlider.addEventListener('input', () => {
+            soundtrack.volume = volumeSlider.value;
+        });
+        soundtrack.volume = volumeSlider.value; // Устанавливаем начальную громкость
 
         // Обработчики событий для кнопок с поддержкой мультитач
         const touches = new Map();
@@ -486,8 +523,10 @@
 
         function startGame(catType) {
             selectedCat = catType;
-            cat.style.background = catType === 'pushok' ? 'radial-gradient(#fff, #ccc, #000)' : 'radial-gradient(#ff8c00, #ffa500)';
+            cat.style.backgroundImage = `url(${catType === 'pushok' ? 'pushok.png' : 'fenya.png'})`;
+            cat.style.backgroundColor = 'transparent'; // Убираем градиент
             menu.style.display = 'none';
+            soundtrack.play();
             initGame();
             console.log(`Котик выбран: ${catType === 'pushok' ? 'Пушок' : 'Феня'}`);
             spawnDogRandomly();
@@ -582,7 +621,6 @@
                 addBonus('food', platformObj);
             }
 
-            // Добавляем шипы на платформы 7, 15, 20, 29
             if ([7, 15, 20, 29].includes(platformCount)) {
                 addSpikes(platformObj);
             }
@@ -607,9 +645,9 @@
         }
 
         function addSpikes(platform) {
-            const spikeWidth = platform.width * 0.2; // 20% ширины платформы
-            const spikeHeight = 10 * scaleFactor; // Высота шипов
-            const spikeX = platform.x + (platform.width - spikeWidth) * Math.random(); // Случайное положение по горизонтали
+            const spikeWidth = platform.width * 0.2;
+            const spikeHeight = 10 * scaleFactor;
+            const spikeX = platform.x + (platform.width - spikeWidth) * Math.random();
             const spikeY = platform.y - spikeHeight;
 
             const spikeContainer = document.createElement('div');
@@ -620,8 +658,7 @@
             spikeContainer.style.height = `${spikeHeight}px`;
             gameContainer.appendChild(spikeContainer);
 
-            // Добавляем несколько треугольников-шипов внутри контейнера
-            const spikeCount = Math.floor(spikeWidth / (10 * scaleFactor)); // Количество шипов в зависимости от ширины
+            const spikeCount = Math.floor(spikeWidth / (10 * scaleFactor));
             for (let i = 0; i < spikeCount; i++) {
                 const spike = document.createElement('div');
                 spike.className = 'spike';
@@ -737,6 +774,7 @@
                 isJumping = true;
                 velocityY = -15 * scaleFactor;
                 cat.style.transform = 'rotate(360deg)';
+                jumpSound.play();
                 console.log('Прыжок начался');
             }
         }
@@ -842,6 +880,7 @@
                     catY + 40 * scaleFactor > b.y && 
                     catY < b.y + (b.type === 'food' ? 20 * scaleFactor : 20 * scaleFactor)
                 ) {
+                    bonusSound.play();
                     if (b.type === 'heart') {
                         if (lives < 5) {
                             lives++;
@@ -971,6 +1010,7 @@
             dog.element.style.width = `${40 * scaleFactor}px`;
             dog.element.style.height = `${30 * scaleFactor}px`;
             gameContainer.appendChild(dog.element);
+            woofSound.play();
         }
 
         function updateDog() {
@@ -1047,6 +1087,7 @@
             gameActive = false;
             movingLeft = false;
             movingRight = false;
+            soundtrack.pause();
             gameOver.style.display = 'block';
             finalScore.textContent = `Очки: ${score}`;
             finalSteps.textContent = `Ступеней: ${steps}`;
@@ -1065,6 +1106,7 @@
             gameActive = true;
             movingLeft = false;
             movingRight = false;
+            soundtrack.play();
             gameLoop();
         }
 
@@ -1082,6 +1124,7 @@
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
             movingLeft = false;
             movingRight = false;
+            soundtrack.play();
             startGame(selectedCat);
         }
 
