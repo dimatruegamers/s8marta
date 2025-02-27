@@ -19,7 +19,7 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
             font-family: 'Poppins', sans-serif;
-            touch-action: manipulation;
+            touch-action: none; /* Убираем стандартное поведение */
         }
         #game-wrapper {
             position: relative;
@@ -176,6 +176,7 @@
             padding: 10px;
             box-sizing: border-box;
             z-index: 1000;
+            user-select: none; /* Предотвращаем выделение текста */
         }
         .left-controls {
             display: flex;
@@ -221,7 +222,6 @@
             100% { opacity: 0; transform: translateY(-15px) scale(1.2); }
         }
 
-        /* Адаптация для мобильных устройств */
         @media only screen and (max-width: 600px) {
             body {
                 display: block;
@@ -335,7 +335,7 @@
         gameContainer.style.width = `${baseWidth}px`;
         gameContainer.style.height = `${baseHeight}px`;
 
-        let catX = baseWidth / 2 - 20 * scaleFactor, catY = baseHeight - 40 * scaleFactor, velocityY = 0, isJumping = false;
+        let catX = baseWidth / 2 - 20 * scaleFactor, catY = 0, velocityY = 0, isJumping = false;
         let score = 0, lives = 1, platforms = [], bonuses = [], dog = null;
         let movingLeft = false, movingRight = false;
         let selectedCat = null, worldOffset = 0;
@@ -358,7 +358,9 @@
             pop.style.fontSize = `${24 * scaleFactor}px`;
         });
 
-        // Обработчики событий для кнопок
+        // Обработчики событий для кнопок с поддержкой мультитач
+        const touches = new Map(); // Отслеживаем активные касания
+
         pushokBtn.addEventListener('click', () => startGame('pushok'));
         pushokBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startGame('pushok'); });
         fenyaBtn.addEventListener('click', () => startGame('fenya'));
@@ -367,16 +369,58 @@
         restartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); restartGame(); });
         continueBtn.addEventListener('click', continueGame);
         continueBtn.addEventListener('touchstart', (e) => { e.preventDefault(); continueGame(); });
+
         leftBtn.addEventListener('mousedown', () => moveLeft(true));
         leftBtn.addEventListener('mouseup', () => moveLeft(false));
-        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(true); });
-        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveLeft(false); });
         rightBtn.addEventListener('mousedown', () => moveRight(true));
         rightBtn.addEventListener('mouseup', () => moveRight(false));
-        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(true); });
-        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveRight(false); });
         jumpBtn.addEventListener('mousedown', jump);
-        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+
+        // Мультитач для кнопок
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                touches.set(touch.identifier, 'left');
+                moveLeft(true);
+            }
+        });
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                touches.set(touch.identifier, 'right');
+                moveRight(true);
+            }
+        });
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                touches.set(touch.identifier, 'jump');
+                jump();
+            }
+        });
+
+        document.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                const action = touches.get(touch.identifier);
+                if (action === 'left') moveLeft(false);
+                if (action === 'right') moveRight(false);
+                touches.delete(touch.identifier);
+            }
+        });
+
+        document.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                const action = touches.get(touch.identifier);
+                if (action === 'left') moveLeft(false);
+                if (action === 'right') moveRight(false);
+                touches.delete(touch.identifier);
+            }
+            // Очищаем состояния при отмене касания
+            movingLeft = false;
+            movingRight = false;
+        });
 
         function startGame(catType) {
             selectedCat = catType;
@@ -408,6 +452,8 @@
             gameActive = true;
             isJumping = false;
             velocityY = 0;
+            movingLeft = false; // Очищаем состояния
+            movingRight = false;
             hasWon = false;
             updateScore();
             updateSteps();
@@ -423,19 +469,19 @@
 
         function addNewPlatform() {
             platformCount++;
-            const maxJumpHeight = 150 * scaleFactor; // Максимальная высота прыжка кота
-            const maxJumpDistance = 150 * scaleFactor; // Максимальная дистанция прыжка кота
-            const minHorizontalGap = 160 * scaleFactor; // Минимальное расстояние по горизонтали
-            const maxHorizontalGap = 200 * scaleFactor; // Максимальное расстояние по горизонтали
-            const minVerticalGap = 90 * scaleFactor; // Минимальный вертикальный зазор (уменьшено на 10%)
-            const maxVerticalGap = 225 * scaleFactor; // Максимальный вертикальный зазор (уменьшено на 10%)
+            const maxJumpHeight = 150 * scaleFactor;
+            const maxJumpDistance = 150 * scaleFactor;
+            const minHorizontalGap = 160 * scaleFactor;
+            const maxHorizontalGap = 240 * scaleFactor;
+            const minVerticalGap = 117 * scaleFactor;
+            const maxVerticalGap = 225 * scaleFactor;
             const x = platforms.length ? 
                 Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
                     platforms[platforms.length - 1].x + (Math.random() * (maxHorizontalGap - minHorizontalGap) + minHorizontalGap) * (Math.random() < 0.5 ? 1 : -1))) : 
                 Math.floor(Math.random() * (baseWidth - 100 * scaleFactor)) + 50 * scaleFactor;
             const y = platforms.length ? 
                 platforms[platforms.length - 1].y - (Math.random() * (maxVerticalGap - minVerticalGap) + minVerticalGap) : 
-                baseHeight - 40 * scaleFactor;
+                baseHeight * 0.9 - 40 * scaleFactor;
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
             let width = isSmall ? 50 * scaleFactor : 100 * scaleFactor;
             if (platformCount > 40) {
@@ -518,9 +564,8 @@
                 velocityY = 0;
                 currentPlatform = onPlatform;
             } else if (currentPlatform && !isJumping) {
-                // Проверка выхода за границы текущей платформы
                 if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
-                    isJumping = true; // Кот падает, если вышел за пределы платформы
+                    isJumping = true;
                 }
             } else if (catY >= baseHeight) {
                 if (lives > 0) {
@@ -546,6 +591,8 @@
 
             if (score >= 1000 && !hasWon) {
                 gameActive = false;
+                movingLeft = false; // Очищаем состояния при выигрыше
+                movingRight = false;
                 winScreen.style.display = 'block';
                 hasWon = true;
             }
@@ -766,6 +813,8 @@
 
         function endGame() {
             gameActive = false;
+            movingLeft = false; // Очищаем состояния при проигрыше
+            movingRight = false;
             gameOver.style.display = 'block';
             finalScore.textContent = `Очки: ${score}`;
             finalSteps.textContent = `Ступеней: ${steps}`;
@@ -778,6 +827,8 @@
         function continueGame() {
             winScreen.style.display = 'none';
             gameActive = true;
+            movingLeft = false; // Очищаем состояния при продолжении
+            movingRight = false;
             gameLoop();
         }
 
@@ -788,6 +839,8 @@
             bonuses.forEach(b => b.element.remove());
             catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor : baseWidth / 2 - 20 * scaleFactor;
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
+            movingLeft = false; // Очищаем состояния при рестарте
+            movingRight = false;
             startGame(selectedCat);
         }
 
