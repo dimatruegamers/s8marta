@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.7</div>
+            <div id="version">v1.8</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -587,13 +587,14 @@
             }
 
             if (isJumping) {
+                const previousY = catY; // Сохраняем предыдущую позицию Y
                 catY += velocityY;
                 velocityY += 0.5 * scaleFactor;
 
-                // Предотвращаем проваливание сквозь текущую платформу при прыжке на месте
+                // Проверяем столкновение с текущей платформой при падении
                 if (currentPlatform && 
                     catY + 40 * scaleFactor >= currentPlatform.y && 
-                    catY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && 
+                    previousY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && // Проверяем, что кот был выше платформы
                     catX + 40 * scaleFactor > currentPlatform.x && 
                     catX < currentPlatform.x + currentPlatform.width && 
                     velocityY >= 0) {
@@ -601,6 +602,7 @@
                     isJumping = false;
                     velocityY = 0;
                     cat.style.transform = 'rotate(0deg)';
+                    console.log('Кот приземлился на текущую платформу после прыжка');
                 }
             }
 
@@ -714,7 +716,7 @@
                 if (dog) {
                     dog.y += worldOffset;
                     dog.element.style.top = `${dog.y}px`;
-                };
+                }
                 if (nut) {
                     nut.y += worldOffset;
                     nut.element.style.top = `${nut.y}px`;
