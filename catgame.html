@@ -98,6 +98,13 @@
             75% { transform: rotate(-5deg); }
             100% { transform: rotate(0deg); }
         }
+        #nut {
+            position: absolute;
+            background: radial-gradient(circle, #8b4513, #5c4033);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
         #score {
             position: absolute;
             top: 5%;
@@ -241,7 +248,7 @@
             }
             #game-container {
                 width: 100vw;
-                height: calc(100vh - 120px); /* Увеличиваем место под кнопки */
+                height: calc(100vh - 120px);
                 border-radius: 0;
                 border: none;
                 position: relative;
@@ -262,9 +269,9 @@
             }
             .controls {
                 position: fixed;
-                bottom: 10px; /* Поднимаем выше от низа */
+                bottom: 10px;
                 width: 100vw;
-                height: 120px; /* Увеличиваем высоту под большие кнопки */
+                height: 120px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -279,8 +286,8 @@
                 padding: 15px;
             }
             button {
-                padding: 20px 40px; /* Увеличиваем размер в 2 раза */
-                font-size: 32px; /* Увеличиваем текст в 2 раза */
+                padding: 20px 40px;
+                font-size: 32px;
             }
         }
     </style>
@@ -290,7 +297,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.0</div>
+            <div id="version">v1.2</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -315,7 +322,7 @@
                 <button id="left-btn">←</button>
                 <button id="right-btn">→</button>
             </div>
-            <button id="jump-btn">Прыжок</button>
+            <button id="jump-btn">↑</button>
         </div>
     </div>
 
@@ -343,15 +350,15 @@
         // Динамические размеры в зависимости от устройства
         const isMobile = window.innerWidth <= 600;
         const baseWidth = isMobile ? window.innerWidth : 600;
-        const baseHeight = isMobile ? window.innerHeight - 120 : 600; // Увеличиваем место под кнопки на мобильных
-        const scaleFactor = baseWidth / 600; // Масштаб относительно базового 600px
+        const baseHeight = isMobile ? window.innerHeight - 120 : 600;
+        const scaleFactor = baseWidth / 600;
 
         // Применяем размеры
         gameContainer.style.width = `${baseWidth}px`;
         gameContainer.style.height = `${baseHeight}px`;
 
         let catX = baseWidth / 2 - 20 * scaleFactor, catY = 0, velocityY = 0, isJumping = false;
-        let score = 0, lives = 1, platforms = [], bonuses = [], dog = null;
+        let score = 0, lives = 1, platforms = [], bonuses = [], dog = null, nut = null;
         let movingLeft = false, movingRight = false;
         let selectedCat = null, worldOffset = 0;
         let gameActive = true, visitedPlatforms = new Set();
@@ -442,6 +449,7 @@
             initGame();
             console.log(`Котик выбран: ${catType === 'pushok' ? 'Пушок' : 'Феня'}`);
             spawnDogRandomly();
+            spawnNutRandomly();
         }
 
         function initGame() {
@@ -449,8 +457,12 @@
             visitedPlatforms.clear();
             platforms.forEach(p => p.element.remove());
             bonuses.forEach(b => b.element.remove());
+            if (dog) dog.element.remove();
+            if (nut) nut.element.remove();
             bonuses = [];
             platforms = [];
+            dog = null;
+            nut = null;
             generateInitialPlatforms();
             
             catX = platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
@@ -484,10 +496,10 @@
             platformCount++;
             const maxJumpHeight = 150 * scaleFactor;
             const maxJumpDistance = 150 * scaleFactor;
-            const minHorizontalGap = 100 * scaleFactor; // Минимум 100px в любую сторону
-            const maxHorizontalGap = 240 * scaleFactor; // Максимум 240px
-            const minVerticalGap = 234 * scaleFactor; // Увеличено в 2 раза
-            const maxVerticalGap = 225 * scaleFactor;
+            const minHorizontalGap = 100 * scaleFactor;
+            const maxHorizontalGap = 240 * scaleFactor;
+            const minVerticalGap = 179 * scaleFactor; // Уменьшено на 20% от 224
+            const maxVerticalGap = 212 * scaleFactor; // Уменьшено на 20% от 265
             const direction = Math.random() < 0.5 ? -1 : 1;
             const x = platforms.length ? 
                 Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
@@ -495,7 +507,7 @@
                 Math.floor(Math.random() * (baseWidth - 100 * scaleFactor)) + 50 * scaleFactor;
             const y = platforms.length ? 
                 platforms[platforms.length - 1].y - (Math.random() * (maxVerticalGap - minVerticalGap) + minVerticalGap) : 
-                baseHeight * 0.8 - 40 * scaleFactor; // Поднимаем первую платформу выше
+                baseHeight * 0.8 - 40 * scaleFactor;
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
             let width = isSmall ? 50 * scaleFactor : 100 * scaleFactor;
             if (platformCount > 40) {
@@ -602,6 +614,7 @@
             cat.style.left = `${catX}px`;
             cat.style.top = `${catY}px`;
             checkCollisions();
+            if (nut) updateNut();
 
             if (score >= 1000 && !hasWon) {
                 gameActive = false;
@@ -672,6 +685,10 @@
                     dog.y += worldOffset;
                     dog.element.style.top = `${dog.y}px`;
                 }
+                if (nut) {
+                    nut.y += worldOffset;
+                    nut.element.style.top = `${nut.y}px`;
+                }
                 if (platforms[0].y > baseHeight) {
                     platforms.shift().element.remove();
                     addNewPlatform();
@@ -730,6 +747,22 @@
                     bonuses.splice(index, 1);
                 }
             });
+
+            if (nut && 
+                catX + 40 * scaleFactor > nut.x && 
+                catX < nut.x + 20 * scaleFactor && 
+                catY + 40 * scaleFactor > nut.y && 
+                catY < nut.y + 20 * scaleFactor && 
+                lives > 0) {
+                lives--;
+                updateLives();
+                cat.classList.add('blink');
+                setTimeout(() => cat.classList.remove('blink'), 2000);
+                console.log(`Орешек попал, жизнь потеряна, жизней: ${lives}`);
+                nut.element.remove();
+                nut = null;
+                if (lives <= 0) endGame();
+            }
         }
 
         function animateScore(start, end) {
@@ -766,10 +799,11 @@
 
         function spawnDogRandomly() {
             if (!gameActive) return;
+            const baseInterval = platformCount >= 30 ? 7500 : 15000;
             setTimeout(() => {
                 if (!dog && gameActive) spawnDog();
                 spawnDogRandomly();
-            }, Math.random() * 15000 + 15000);
+            }, Math.random() * baseInterval + baseInterval);
         }
 
         function spawnDog() {
@@ -801,6 +835,37 @@
                 lives = 0;
                 updateLives();
                 endGame();
+            }
+        }
+
+        function spawnNutRandomly() {
+            if (!gameActive) return;
+            setTimeout(() => {
+                if (!nut && gameActive) spawnNut();
+                spawnNutRandomly();
+            }, Math.random() * 5000 + 10000);
+        }
+
+        function spawnNut() {
+            nut = {
+                x: Math.random() * (baseWidth - 20 * scaleFactor),
+                y: -20 * scaleFactor,
+                element: document.createElement('div')
+            };
+            nut.element.id = 'nut';
+            nut.element.style.left = `${nut.x}px`;
+            nut.element.style.top = `${nut.y}px`;
+            nut.element.style.width = `${20 * scaleFactor}px`;
+            nut.element.style.height = `${20 * scaleFactor}px`;
+            gameContainer.appendChild(nut.element);
+        }
+
+        function updateNut() {
+            nut.y += 5 * scaleFactor;
+            nut.element.style.top = `${nut.y}px`;
+            if (nut.y > baseHeight) {
+                nut.element.remove();
+                nut = null;
             }
         }
 
@@ -836,6 +901,10 @@
                 dog.element.remove();
                 dog = null;
             }
+            if (nut) {
+                nut.element.remove();
+                nut = null;
+            }
         }
 
         function continueGame() {
@@ -851,6 +920,10 @@
             winScreen.style.display = 'none';
             platforms.forEach(p => p.element.remove());
             bonuses.forEach(b => b.element.remove());
+            if (dog) dog.element.remove();
+            if (nut) nut.element.remove();
+            dog = null;
+            nut = null;
             catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor : baseWidth / 2 - 20 * scaleFactor;
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
             movingLeft = false;
