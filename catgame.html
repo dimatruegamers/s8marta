@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Игра с котиком</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'JoyStix';
+            src: url('joystix.ttf') format('truetype'); /* Укажите путь к вашему файлу шрифта */
+            font-weight: normal;
+            font-style: normal;
+        }
         html, body {
             margin: 0;
             padding: 0;
@@ -18,7 +23,7 @@
             align-items: center;
             min-height: 100vh;
             background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
-            font-family: 'Poppins', sans-serif;
+            font-family: 'JoyStix', sans-serif;
             touch-action: none;
         }
         #game-wrapper {
@@ -105,12 +110,16 @@
             z-index: 10;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
+        #score, #steps, #version, #menu, #game-over, #win-screen, button {
+            font-family: 'JoyStix', sans-serif;
+            color: #fff;
+            -webkit-text-stroke: 1px #000; /* Чёрная обводка */
+            text-shadow: 2px 2px 4px #000; /* Чёрная тень */
+        }
         #score {
             position: absolute;
             top: 5%;
             left: 5%;
-            color: #fff;
-            font-weight: 700;
             padding: 1% 2%;
             border-radius: 12px;
             z-index: 20;
@@ -119,8 +128,6 @@
             position: absolute;
             top: 15%;
             left: 5%;
-            color: #fff;
-            font-weight: 700;
             padding: 1% 2%;
             border-radius: 12px;
             z-index: 20;
@@ -129,9 +136,7 @@
             position: absolute;
             top: 2%;
             right: 5%;
-            color: #fff;
             font-size: 12px;
-            font-weight: 400;
             z-index: 20;
         }
         #lives {
@@ -159,8 +164,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
             background: rgba(255,255,255,0.2);
             padding: 20px;
             border-radius: 20px;
@@ -211,10 +214,6 @@
             border: none;
             border-radius: 20px;
             background: linear-gradient(45deg, #ff6b6b, #ff8e53);
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 20px;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -234,10 +233,11 @@
         @keyframes blink { 50% { opacity: 0; } }
         .score-pop {
             position: absolute;
-            font-weight: 700;
             z-index: 20;
             animation: scoreFade 1s forwards;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-family: 'JoyStix', sans-serif;
+            -webkit-text-stroke: 1px #000;
+            text-shadow: 2px 2px 4px #000;
         }
         .heart-pop { color: #ff1493; }
         .food-pop { color: #8b4513; }
@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.8</div>
+            <div id="version">v1.9</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -323,7 +323,7 @@
             <div id="game-over" style="display: none;">
                 <h2>Игра окончена!</h2>
                 <p id="final-score">Очки: 0</p>
-                <p id="final-steps">Ступеней: 0</p>
+                <p id="final-steps">Ступенейff: 0</p>
                 <button id="restart-btn">Играть заново</button>
             </div>
             <div id="win-screen" style="display: none;">
