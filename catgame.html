@@ -29,7 +29,7 @@
             gap: 0;
             width: 100%;
             max-width: 600px;
-            height: 100vh; /* Полная высота экрана */
+            height: 100vh;
         }
         #game-container {
             position: relative;
@@ -232,7 +232,7 @@
             }
             #game-container {
                 width: 100vw;
-                height: calc(100vh - 80px); /* Игра + кнопки = 100vh */
+                height: calc(100vh - 80px);
                 border-radius: 0;
                 border: none;
                 position: relative;
@@ -424,17 +424,17 @@
         function addNewPlatform() {
             platformCount++;
             const maxJumpHeight = 150 * scaleFactor; // Максимальная высота прыжка кота
-            const maxJumpDistance = 150 * scaleFactor; // Максимальная дистанция по горизонтали
-            const minHorizontalGap = maxJumpDistance * 0.8; // 80% от максимальной дистанции
-            const maxHorizontalGap = maxJumpDistance; // 100% от максимальной дистанции
-            const minVerticalGap = 100 * scaleFactor; // Минимальный вертикальный зазор (увеличен)
+            const maxJumpDistance = 150 * scaleFactor; // Максимальная дистанция прыжка кота
+            const minHorizontalGap = 160 * scaleFactor; // Минимальное расстояние по горизонтали (160px на мобильных)
+            const maxHorizontalGap = 200 * scaleFactor; // Максимальное расстояние по горизонтали (200px на мобильных)
+            const minVerticalGap = 100 * scaleFactor; // Минимальный вертикальный зазор
             const x = platforms.length ? 
                 Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
                     platforms[platforms.length - 1].x + (Math.random() * (maxHorizontalGap - minHorizontalGap) + minHorizontalGap) * (Math.random() < 0.5 ? 1 : -1))) : 
                 Math.floor(Math.random() * (baseWidth - 100 * scaleFactor)) + 50 * scaleFactor;
             const y = platforms.length ? 
                 platforms[platforms.length - 1].y - (Math.random() * maxJumpHeight + minVerticalGap) : 
-                baseHeight - 40 * scaleFactor; // Увеличен разброс по вертикали
+                baseHeight - 40 * scaleFactor;
             const isSmall = platformCount % 10 === 0 && Math.random() > 0.5;
             let width = isSmall ? 50 * scaleFactor : 100 * scaleFactor;
             if (platformCount > 40) {
@@ -658,7 +658,7 @@
                         animateScore(score, score + 50);
                         showScorePopup('+50', 'food-pop');
                         console.log(`Собрана еда, +50 очков, очки: ${score}`);
-                        }
+                    }
                     b.element.remove();
                     bonuses.splice(index, 1);
                 }
