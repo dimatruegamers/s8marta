@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.4</div>
+            <div id="version">v1.5</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -576,19 +576,15 @@
 
             updatePlatforms();
 
-            if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
-                catX += currentPlatform.speed;
-                catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
-                // Проверка выхода за границы текущей платформы при движении
-                if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
-                    isJumping = true;
-                }
-            }
-
             if (movingLeft) catX -= 5 * scaleFactor;
             if (movingRight) catX += 5 * scaleFactor;
 
             catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
+
+            if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
+                catX += currentPlatform.speed;
+                catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
+            }
 
             if (isJumping) {
                 catY += velocityY;
@@ -607,6 +603,13 @@
                 isJumping = false;
                 velocityY = 0;
                 currentPlatform = onPlatform;
+                cat.style.transform = 'rotate(0deg)';
+            } else if (!isJumping && currentPlatform) {
+                // Проверка выхода за границы текущей платформы
+                if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
+                    isJumping = true;
+                    console.log('Кот вышел за границы платформы, падение началось');
+                }
             } else if (catY >= baseHeight) {
                 if (lives > 0) {
                     lives--;
@@ -719,7 +722,7 @@
                     catX + 40 * scaleFactor > p.x && 
                     catX < p.x + p.width
                 ) {
-                    if (velocityY >= 0) { // Упрощаем: приземление только при падении
+                    if (velocityY >= 0) {
                         catY = p.y - 40 * scaleFactor;
                         isJumping = false;
                         velocityY = 0;
