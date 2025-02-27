@@ -99,7 +99,6 @@
             background-size: cover;
             border-radius: 4px;
             z-index: 10;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
             animation: wag 0.5s infinite;
         }
         @keyframes wag {
@@ -114,14 +113,10 @@
             background-size: cover;
             border-radius: 50%;
             z-index: 10;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
         .spikes {
             position: absolute;
-            background: linear-gradient(45deg, #555, #333);
-            border-radius: 4px;
             z-index: 12;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .spike {
             position: absolute;
@@ -171,7 +166,6 @@
         .heart {
             background: url('life.png') no-repeat center center;
             background-size: cover;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             animation: heartbeat 1s infinite;
         }
         @keyframes heartbeat {
@@ -205,6 +199,23 @@
         #menu button {
             margin: 10px;
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        #pushok-btn::before, #fenya-btn::before {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-size: cover;
+        }
+        #pushok-btn::before {
+            background-image: url('pushok.png');
+        }
+        #fenya-btn::before {
+            background-image: url('fenya.png');
         }
         @keyframes pop {
             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
@@ -345,7 +356,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.12</div>
+            <div id="version">v1.13</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -400,6 +411,7 @@
         const bonusSound = new Audio('bonus.wav');
         const jumpSound = new Audio('jump.wav');
         const nutSound = new Audio('nut.wav');
+        const meowSound = new Audio('meow.wav');
 
         // Динамические размеры в зависимости от устройства
         const isMobile = window.innerWidth <= 600;
@@ -422,7 +434,7 @@
         let hasWon = false;
 
         // Адаптация размеров элементов
-        cat.style.width = `${40 * scaleFactor}px`;
+        cat.style.width = `${48 * scaleFactor}px`; // Прямоугольный кот (48x40)
         cat.style.height = `${40 * scaleFactor}px`;
         scoreDisplay.style.fontSize = `${28 * scaleFactor}px`;
         stepsDisplay.style.fontSize = `${22 * scaleFactor}px`;
@@ -498,7 +510,7 @@
 
         function startGame(catType) {
             selectedCat = catType;
-            cat.style.backgroundImage = `url(${catType === 'pushok' ? 'pushok.png' : 'fenya.png'})`;
+            cat.style.backgroundImage = `url(${catType === 'pushok' ? 'pushok1.png' : 'fenya1.png'})`;
             cat.style.backgroundColor = 'transparent';
             menu.style.display = 'none';
             initGame();
@@ -522,7 +534,7 @@
             nut = null;
             generateInitialPlatforms();
             
-            catX = platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
+            catX = platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor; // Центрируем прямоугольного кота
             catY = platforms[0].y - 40 * scaleFactor;
             currentPlatform = platforms[0];
             cat.style.left = `${catX}px`;
@@ -602,7 +614,7 @@
 
         function addBonus(type, platform) {
             const bonus = {
-                x: platform.x + platform.width / 2 - (type === 'food' ? 15 * scaleFactor : 10 * scaleFactor),
+                x: platform.x + platform.width / 2 - (type === 'food' ? 10 * scaleFactor : 10 * scaleFactor),
                 y: platform.y - 25 * scaleFactor,
                 type: type,
                 element: document.createElement('div'),
@@ -611,8 +623,8 @@
             bonus.element.className = `bonus ${type === 'heart' ? 'heart-bonus' : 'food-bonus'}`;
             bonus.element.style.left = `${bonus.x}px`;
             bonus.element.style.top = `${bonus.y}px`;
-            bonus.element.style.width = `${type === 'food' ? 30 * scaleFactor : 20 * scaleFactor}px`;
-            bonus.element.style.height = `${type === 'food' ? 20 * scaleFactor : 20 * scaleFactor}px`;
+            bonus.element.style.width = `${type === 'food' ? 20 * scaleFactor : 20 * scaleFactor}px`; // Для прямоугольной формы корма
+            bonus.element.style.height = `${type === 'food' ? 30 * scaleFactor : 20 * scaleFactor}px`;
             gameContainer.appendChild(bonus.element);
             bonuses.push(bonus);
             console.log(`Бонус появился: ${type === 'heart' ? 'сердце' : 'еда'} на платформе ${platform.count}, x: ${bonus.x}, y: ${bonus.y}`);
@@ -662,11 +674,11 @@
             if (movingLeft) catX -= 5 * scaleFactor;
             if (movingRight) catX += 5 * scaleFactor;
 
-            catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
+            catX = Math.max(0, Math.min(baseWidth - 48 * scaleFactor, catX)); // Учитываем ширину кота
 
             if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
                 catX += currentPlatform.speed;
-                catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
+                catX = Math.max(0, Math.min(baseWidth - 48 * scaleFactor, catX));
             }
 
             if (isJumping) {
@@ -677,13 +689,13 @@
                 if (currentPlatform && 
                     catY + 40 * scaleFactor >= currentPlatform.y && 
                     previousY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && 
-                    catX + 40 * scaleFactor > currentPlatform.x && 
+                    catX + 48 * scaleFactor > currentPlatform.x && 
                     catX < currentPlatform.x + currentPlatform.width && 
                     velocityY >= 0) {
                     catY = currentPlatform.y - 40 * scaleFactor;
                     isJumping = false;
                     velocityY = 0;
-                    cat.style.animation = ''; // Убираем анимацию после приземления
+                    cat.style.animation = '';
                     console.log('Кот приземлился на текущую платформу после прыжка');
                 }
             }
@@ -691,7 +703,7 @@
             const onPlatform = platforms.find(p => 
                 catY + 40 * scaleFactor >= p.y && 
                 catY + 40 * scaleFactor <= p.y + 15 * scaleFactor && 
-                catX + 40 * scaleFactor > p.x && 
+                catX + 48 * scaleFactor > p.x && 
                 catX < p.x + p.width
             );
 
@@ -702,7 +714,7 @@
                 cat.style.animation = '';
                 currentPlatform = onPlatform;
             } else if (!onPlatform && !isJumping && currentPlatform) {
-                if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
+                if (catX + 48 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
                     console.log('Кот вышел за границы платформы, падение началось');
                 }
@@ -710,8 +722,9 @@
 
             if (catY >= baseHeight && lives > 0) {
                 lives--;
+                meowSound.play();
                 catY = currentPlatform ? currentPlatform.y - 40 * scaleFactor : platforms[0].y - 40 * scaleFactor;
-                catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 20 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
+                catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 24 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor;
                 isJumping = false;
                 velocityY = 0;
                 cat.style.animation = '';
@@ -777,7 +790,7 @@
 
             bonuses.forEach(b => {
                 if (b.parentPlatform.count >= 20) {
-                    b.x = b.parentPlatform.x + b.parentPlatform.width / 2 - (b.type === 'food' ? 15 * scaleFactor : 10 * scaleFactor);
+                    b.x = b.parentPlatform.x + b.parentPlatform.width / 2 - (b.type === 'food' ? 10 * scaleFactor : 10 * scaleFactor);
                     b.element.style.left = `${b.x}px`;
                 }
             });
@@ -827,7 +840,7 @@
                 if (
                     catY + 40 * scaleFactor >= p.y && 
                     catY + 40 * scaleFactor <= p.y + 15 * scaleFactor && 
-                    catX + 40 * scaleFactor > p.x && 
+                    catX + 48 * scaleFactor > p.x && 
                     catX < p.x + p.width
                 ) {
                     if (velocityY >= 0) {
@@ -847,12 +860,12 @@
             });
 
             bonuses.forEach((b, index) => {
-                const bonusWidth = b.type === 'food' ? 30 * scaleFactor : 20 * scaleFactor;
+                const bonusWidth = b.type === 'food' ? 20 * scaleFactor : 20 * scaleFactor;
                 if (
-                    catX + 40 * scaleFactor > b.x && 
+                    catX + 48 * scaleFactor > b.x && 
                     catX < b.x + bonusWidth && 
                     catY + 40 * scaleFactor > b.y && 
-                    catY < b.y + (b.type === 'food' ? 20 * scaleFactor : 20 * scaleFactor)
+                    catY < b.y + (b.type === 'food' ? 30 * scaleFactor : 20 * scaleFactor)
                 ) {
                     bonusSound.play();
                     if (b.type === 'heart') {
@@ -880,12 +893,13 @@
 
             spikes.forEach((s, index) => {
                 if (s.active && 
-                    catX + 40 * scaleFactor > s.x && 
+                    catX + 48 * scaleFactor > s.x && 
                     catX < s.x + s.width && 
                     catY + 40 * scaleFactor > s.y && 
                     catY < s.y + s.height && 
                     lives > 0) {
                     lives--;
+                    meowSound.play();
                     updateLives();
                     cat.classList.add('blink');
                     setTimeout(() => cat.classList.remove('blink'), 2000);
@@ -898,12 +912,13 @@
             });
 
             if (nut && 
-                catX + 40 * scaleFactor > nut.x && 
+                catX + 48 * scaleFactor > nut.x && 
                 catX < nut.x + 20 * scaleFactor && 
                 catY + 40 * scaleFactor > nut.y && 
                 catY < nut.y + 20 * scaleFactor && 
                 lives > 0) {
                 lives--;
+                meowSound.play();
                 updateLives();
                 cat.classList.add('blink');
                 setTimeout(() => cat.classList.remove('blink'), 2000);
@@ -911,6 +926,18 @@
                 nut.element.remove();
                 nut = null;
                 if (lives <= 0) endGame();
+            }
+
+            if (dog && 
+                catX + 48 * scaleFactor > dog.x && 
+                catX < dog.x + 40 * scaleFactor && 
+                catY + 40 * scaleFactor > dog.y && 
+                catY < dog.y + 30 * scaleFactor && 
+                lives > 0) {
+                lives = 0;
+                meowSound.play();
+                updateLives();
+                endGame();
             }
         }
 
@@ -956,7 +983,7 @@
             const popup = document.createElement('div');
             popup.className = `score-pop ${type}`;
             popup.textContent = text;
-            popup.style.left = `${catX + 20 * scaleFactor}px`;
+            popup.style.left = `${catX + 24 * scaleFactor}px`; // Центрируем для прямоугольного кота
             popup.style.top = `${catY - 20 * scaleFactor}px`;
             popup.style.fontSize = `${24 * scaleFactor}px`;
             gameContainer.appendChild(popup);
@@ -993,15 +1020,6 @@
             if (dog.x > baseWidth) {
                 dog.element.remove();
                 dog = null;
-            } else if (
-                catX + 40 * scaleFactor > dog.x && 
-                catX < dog.x + 40 * scaleFactor && 
-                catY + 40 * scaleFactor > dog.y && 
-                catY < dog.y + 30 * scaleFactor
-            ) {
-                lives = 0;
-                updateLives();
-                endGame();
             }
         }
 
@@ -1093,7 +1111,7 @@
             if (nut) nut.element.remove();
             dog = null;
             nut = null;
-            catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor : baseWidth / 2 - 20 * scaleFactor;
+            catX = platforms[0] ? platforms[0].x + platforms[0].width / 2 - 24 * scaleFactor : baseWidth / 2 - 24 * scaleFactor;
             catY = platforms[0] ? platforms[0].y - 40 * scaleFactor : baseHeight - 40 * scaleFactor;
             movingLeft = false;
             movingRight = false;
