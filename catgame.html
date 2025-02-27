@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.6</div>
+            <div id="version">v1.7</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -589,6 +589,19 @@
             if (isJumping) {
                 catY += velocityY;
                 velocityY += 0.5 * scaleFactor;
+
+                // Предотвращаем проваливание сквозь текущую платформу при прыжке на месте
+                if (currentPlatform && 
+                    catY + 40 * scaleFactor >= currentPlatform.y && 
+                    catY + 40 * scaleFactor <= currentPlatform.y + 15 * scaleFactor && 
+                    catX + 40 * scaleFactor > currentPlatform.x && 
+                    catX < currentPlatform.x + currentPlatform.width && 
+                    velocityY >= 0) {
+                    catY = currentPlatform.y - 40 * scaleFactor;
+                    isJumping = false;
+                    velocityY = 0;
+                    cat.style.transform = 'rotate(0deg)';
+                }
             }
 
             const onPlatform = platforms.find(p => 
@@ -605,7 +618,7 @@
                 currentPlatform = onPlatform;
                 cat.style.transform = 'rotate(0deg)';
             } else if (!onPlatform && !isJumping && currentPlatform) {
-                // Если кот не на платформе и был на платформе, он падает
+                // Падение, если кот вышел за границы платформы
                 if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
                     console.log('Кот вышел за границы платформы, падение началось');
@@ -701,7 +714,7 @@
                 if (dog) {
                     dog.y += worldOffset;
                     dog.element.style.top = `${dog.y}px`;
-                }
+                };
                 if (nut) {
                     nut.y += worldOffset;
                     nut.element.style.top = `${nut.y}px`;
