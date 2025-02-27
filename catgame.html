@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.3</div>
+            <div id="version">v1.4</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -542,7 +542,7 @@
                 width: width, 
                 id: Date.now() + platformCount, 
                 count: platformCount,
-                speed: platformCount >= 50 ? (Math.random() * 8 - 4) * scaleFactor : (platformCount >= 20 ? (Math.random() > 0.5 ? 2 * scaleFactor : -2 * scaleFactor) : 0) // С 50-й случайная скорость от -4 до 4
+                speed: platformCount >= 50 ? (Math.random() * 8 - 4) * scaleFactor : (platformCount >= 20 ? (Math.random() > 0.5 ? 2 * scaleFactor : -2 * scaleFactor) : 0)
             };
             platforms.push(platformObj);
 
@@ -579,6 +579,10 @@
             if (currentPlatform && currentPlatform.count >= 20 && !isJumping) {
                 catX += currentPlatform.speed;
                 catX = Math.max(0, Math.min(baseWidth - 40 * scaleFactor, catX));
+                // Проверка выхода за границы текущей платформы при движении
+                if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
+                    isJumping = true;
+                }
             }
 
             if (movingLeft) catX -= 5 * scaleFactor;
@@ -715,11 +719,11 @@
                     catX + 40 * scaleFactor > p.x && 
                     catX < p.x + p.width
                 ) {
-                    if (velocityY >= 0 || p === currentPlatform) { // Разрешаем приземление на текущую платформу
+                    if (velocityY >= 0) { // Упрощаем: приземление только при падении
                         catY = p.y - 40 * scaleFactor;
                         isJumping = false;
                         velocityY = 0;
-                        cat.style.transform = 'rotate(0deg)';
+                       .cat.style.transform = 'rotate(0deg)';
                         if (!visitedPlatforms.has(p.id)) {
                             visitedPlatforms.add(p.id);
                             animateScore(score, score + 10);
