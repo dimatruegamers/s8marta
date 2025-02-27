@@ -170,6 +170,14 @@
             width: 80%;
             max-width: 400px;
         }
+        #menu h1 {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+        #menu p {
+            font-size: 16px;
+            margin: 0 0 15px 0;
+        }
         #menu button {
             margin: 10px;
             width: 100%;
@@ -285,6 +293,12 @@
                 max-width: 90vw;
                 padding: 15px;
             }
+            #menu h1 {
+                font-size: 20px;
+            }
+            #menu p {
+                font-size: 14px;
+            }
             button {
                 padding: 20px 40px;
                 font-size: 32px;
@@ -297,12 +311,12 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.2</div>
+            <div id="version">v1.3</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
-                <h2>Выбери котика</h2>
-                <p>Цель: Получи 1000 очков</p>
+                <h1>Приключение Пушка и Фени</h1>
+                <p>Остерегайся пробегающих собак и падающих орехов!</p>
                 <button id="pushok-btn">Пушок</button>
                 <button id="fenya-btn">Феня</button>
             </div>
@@ -498,8 +512,8 @@
             const maxJumpDistance = 150 * scaleFactor;
             const minHorizontalGap = 100 * scaleFactor;
             const maxHorizontalGap = 240 * scaleFactor;
-            const minVerticalGap = 179 * scaleFactor; // Уменьшено на 20% от 224
-            const maxVerticalGap = 212 * scaleFactor; // Уменьшено на 20% от 265
+            const minVerticalGap = 179 * scaleFactor;
+            const maxVerticalGap = 212 * scaleFactor;
             const direction = Math.random() < 0.5 ? -1 : 1;
             const x = platforms.length ? 
                 Math.max(0, Math.min(baseWidth - 100 * scaleFactor, 
@@ -528,7 +542,7 @@
                 width: width, 
                 id: Date.now() + platformCount, 
                 count: platformCount,
-                speed: platformCount >= 20 ? (Math.random() > 0.5 ? 2 * scaleFactor : -2 * scaleFactor) : 0
+                speed: platformCount >= 50 ? (Math.random() * 8 - 4) * scaleFactor : (platformCount >= 20 ? (Math.random() > 0.5 ? 2 * scaleFactor : -2 * scaleFactor) : 0) // С 50-й случайная скорость от -4 до 4
             };
             platforms.push(platformObj);
 
@@ -589,10 +603,6 @@
                 isJumping = false;
                 velocityY = 0;
                 currentPlatform = onPlatform;
-            } else if (currentPlatform && !isJumping) {
-                if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
-                    isJumping = true;
-                }
             } else if (catY >= baseHeight) {
                 if (lives > 0) {
                     lives--;
@@ -655,8 +665,8 @@
             platforms.forEach(p => {
                 if (p.count >= 20) {
                     p.x += p.speed;
-                    if (p.x <= 0) p.speed = 2 * scaleFactor;
-                    if (p.x >= baseWidth - p.width) p.speed = -2 * scaleFactor;
+                    if (p.x <= 0) p.speed = Math.abs(p.speed);
+                    if (p.x >= baseWidth - p.width) p.speed = -Math.abs(p.speed);
                     p.element.style.left = `${p.x}px`;
                 }
             });
@@ -703,20 +713,21 @@
                     catY + 40 * scaleFactor >= p.y && 
                     catY + 40 * scaleFactor <= p.y + 15 * scaleFactor && 
                     catX + 40 * scaleFactor > p.x && 
-                    catX < p.x + p.width && 
-                    velocityY >= 0
+                    catX < p.x + p.width
                 ) {
-                    catY = p.y - 40 * scaleFactor;
-                    isJumping = false;
-                    velocityY = 0;
-                    cat.style.transform = 'rotate(0deg)';
-                    if (!visitedPlatforms.has(p.id)) {
-                        visitedPlatforms.add(p.id);
-                        animateScore(score, score + 10);
-                        steps++;
-                        updateSteps();
+                    if (velocityY >= 0 || p === currentPlatform) { // Разрешаем приземление на текущую платформу
+                        catY = p.y - 40 * scaleFactor;
+                        isJumping = false;
+                        velocityY = 0;
+                        cat.style.transform = 'rotate(0deg)';
+                        if (!visitedPlatforms.has(p.id)) {
+                            visitedPlatforms.add(p.id);
+                            animateScore(score, score + 10);
+                            steps++;
+                            updateSteps();
+                        }
+                        currentPlatform = p;
                     }
-                    currentPlatform = p;
                 }
             });
 
