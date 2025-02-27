@@ -16,7 +16,7 @@
             background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
             font-family: 'Comic Neue', cursive;
             overflow: hidden;
-            touch-action: manipulation; /* Блокирует масштабирование и прокрутку на мобильных */
+            touch-action: manipulation; /* Блокирует масштабирование и прокрутку */
         }
         #game-wrapper {
             position: relative;
@@ -24,6 +24,8 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            width: 100%;
+            max-width: 600px;
         }
         #game-container {
             position: relative;
@@ -111,7 +113,6 @@
             padding: 8px 20px;
             border-radius: 25px;
             z-index: 20;
-            animation: glow 2s infinite;
         }
         #steps {
             position: absolute;
@@ -123,12 +124,6 @@
             padding: 8px 20px;
             border-radius: 25px;
             z-index: 20;
-            animation: glow 2s infinite;
-        }
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255,255,255,0.5); }
-            50% { box-shadow: 0 0 15px rgba(255,255,255,0.8); }
-            100% { box-shadow: 0 0 5px rgba(255,255,255,0.5); }
         }
         #lives {
             position: absolute;
@@ -237,11 +232,25 @@
 
         /* Адаптация для мобильных устройств */
         @media only screen and (max-width: 600px) {
-            #game-container {
+            body {
+                display: block; /* Убираем центрирование для полного контроля */
+            }
+            #game-wrapper {
                 width: 100vw;
-                height: calc(100vh - 100px); /* Оставляем место для кнопок */
+                height: 100vh;
+                gap: 0;
+            }
+            #game-container {
+                width: 600px;
+                height: 600px;
+                margin: 0 auto;
                 border-radius: 0;
                 border: none;
+                position: relative;
+                top: 0;
+                left: 0;
+                transform: translateX(-50%);
+                left: 50%;
             }
             .controls {
                 position: fixed;
