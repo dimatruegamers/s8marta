@@ -311,7 +311,7 @@
         <div id="game-container">
             <div id="score">Очки: 0</div>
             <div id="steps">Ступень: 1</div>
-            <div id="version">v1.5</div>
+            <div id="version">v1.6</div>
             <div id="lives"></div>
             <div id="cat"></div>
             <div id="menu">
@@ -604,27 +604,27 @@
                 velocityY = 0;
                 currentPlatform = onPlatform;
                 cat.style.transform = 'rotate(0deg)';
-            } else if (!isJumping && currentPlatform) {
-                // Проверка выхода за границы текущей платформы
+            } else if (!onPlatform && !isJumping && currentPlatform) {
+                // Если кот не на платформе и был на платформе, он падает
                 if (catX + 40 * scaleFactor <= currentPlatform.x || catX >= currentPlatform.x + currentPlatform.width) {
                     isJumping = true;
                     console.log('Кот вышел за границы платформы, падение началось');
                 }
-            } else if (catY >= baseHeight) {
-                if (lives > 0) {
-                    lives--;
-                    catY = currentPlatform ? currentPlatform.y - 40 * scaleFactor : platforms[0].y - 40 * scaleFactor;
-                    catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 20 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
-                    isJumping = false;
-                    velocityY = 0;
-                    cat.style.transform = 'rotate(0deg)';
-                    cat.classList.add('blink');
-                    setTimeout(() => cat.classList.remove('blink'), 2000);
-                    updateLives();
-                    console.log(`Жизнь потеряна, возвращён на платформу на высоте ${catY + 40 * scaleFactor}`);
-                    if (!currentPlatform) currentPlatform = platforms[0];
-                    if (lives <= 0) return endGame();
-                }
+            }
+
+            if (catY >= baseHeight && lives > 0) {
+                lives--;
+                catY = currentPlatform ? currentPlatform.y - 40 * scaleFactor : platforms[0].y - 40 * scaleFactor;
+                catX = currentPlatform ? currentPlatform.x + currentPlatform.width / 2 - 20 * scaleFactor : platforms[0].x + platforms[0].width / 2 - 20 * scaleFactor;
+                isJumping = false;
+                velocityY = 0;
+                cat.style.transform = 'rotate(0deg)';
+                cat.classList.add('blink');
+                setTimeout(() => cat.classList.remove('blink'), 2000);
+                updateLives();
+                console.log(`Жизнь потеряна, возвращён на платформу на высоте ${catY + 40 * scaleFactor}`);
+                if (!currentPlatform) currentPlatform = platforms[0];
+                if (lives <= 0) return endGame();
             }
 
             adjustWorld();
